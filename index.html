@@ -1,0 +1,3702 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>CỔNG TIN TỨC ĐIỆN TỬ TỰ HÀNH | Tin Tức 24/7</title>
+  
+  <!-- Favicon & Meta SEO -->
+  <meta name="description" content="Cổng thông tin báo chí điện tử tự hành tổng hợp từ Google Sheet & RSS. Tự động cập nhật 07:00 sáng hàng ngày với 6 chuyên mục trọng tâm.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📰</text></svg>">
+
+  <!-- Google Fonts: Inter (UI/Body) & Merriweather (Editorial Headlines) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Merriweather', 'Georgia', 'serif'],
+            masthead: ['Playfair Display', 'Georgia', 'serif'],
+          },
+          colors: {
+            editorial: {
+              red: '#b91c1c',
+              darkRed: '#991b1b',
+              navy: '#0f172a',
+              ink: '#1e293b',
+              paper: '#f8fafc',
+              border: '#e2e8f0',
+              darkBg: '#090d16',
+              darkCard: '#131b2e',
+              darkBorder: '#1e293b'
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'marquee': 'marquee 30s linear infinite',
+            'soundwave': 'soundwave 1.2s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            marquee: {
+              '0%': { transform: 'translateX(0%)' },
+              '100%': { transform: 'translateX(-50%)' },
+            },
+            soundwave: {
+              '0%': { height: '6px' },
+              '100%': { height: '24px' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .dark ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+    .dark ::-webkit-scrollbar-thumb {
+      background: #334155;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* Hide scrollbar for category tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Pause marquee on hover */
+    .marquee-container:hover .marquee-content {
+      animation-play-state: paused;
+    }
+
+    /* Drop-cap for editorial reading mode */
+    .editorial-dropcap::first-letter {
+      float: left;
+      font-size: 3.8rem;
+      line-height: 0.85;
+      margin: 0.1rem 0.6rem 0 0;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 700;
+      color: #b91c1c;
+    }
+    .dark .editorial-dropcap::first-letter {
+      color: #ef4444;
+    }
+
+    /* Line Clamp utilities */
+    .clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .clamp-3 {
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="bg-[#f8fafc] text-slate-800 dark:bg-[#090d16] dark:text-slate-100 font-sans min-h-screen transition-colors duration-200 antialiased selection:bg-red-500 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- 1. TOP BAR & BREAKING NEWS TICKER                                         -->
+  <!-- ========================================================================= -->
+  <aside aria-label="Thông tin nhanh buổi sáng" class="bg-slate-900 text-slate-300 text-xs border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row items-center justify-between py-1.5 gap-2">
+        <!-- Ngày tháng tiếng Việt & Đồng hồ -->
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-1.5 font-medium text-slate-200">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-red-400"></i>
+            <span id="currentDateText">Đang tải ngày...</span>
+          </div>
+          <span class="text-slate-600 hidden sm:inline">|</span>
+          <div class="flex items-center space-x-1 font-mono text-amber-300 hidden sm:flex">
+            <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+            <span id="liveClock">07:00:00</span>
+          </div>
+        </div>
+
+        <!-- Tiện ích thời tiết & Tỷ giá thị trường -->
+        <div class="flex items-center space-x-4 text-[11px] text-slate-400">
+          <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60">
+            <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Hà Nội: <b class="text-slate-200">26°C</b></span>
+          </div>
+          <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 hidden sm:flex">
+            <i data-lucide="cloud-sun" class="w-3.5 h-3.5 text-sky-400"></i>
+            <span>TP.HCM: <b class="text-slate-200">31°C</b></span>
+          </div>
+          <div class="flex items-center space-x-1.5 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 hidden md:flex">
+            <i data-lucide="trending-up" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>VN-Index: <b class="text-emerald-400">1,288.6 (+5.4)</b></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- BREAKING NEWS TICKER -->
+  <div class="bg-red-700 text-white overflow-hidden shadow-inner flex items-center h-10 border-b border-red-800 relative z-20">
+    <div class="bg-red-900 text-white font-bold text-xs uppercase px-4 py-2 flex items-center space-x-2 shrink-0 z-10 shadow-md">
+      <span class="w-2 h-2 rounded-full bg-yellow-300 animate-ping inline-block"></span>
+      <i data-lucide="flame" class="w-4 h-4 text-yellow-300"></i>
+      <span class="tracking-wider">TIN NÓNG 24H:</span>
+    </div>
+    
+    <div class="relative w-full overflow-hidden marquee-container flex items-center cursor-pointer" onclick="openLeadOrBreakingStory()">
+      <div id="breakingNewsMarquee" class="flex whitespace-nowrap marquee-content text-xs sm:text-sm font-medium tracking-wide">
+        <!-- Nạp động qua JS -->
+        <span class="px-6 flex items-center"><span class="text-yellow-300 mr-2">●</span> Đang tải các dòng tin tức nóng nhất buổi sáng...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 2. MASTHEAD & HEADER TÒA SOẠN                                             -->
+  <!-- ========================================================================= -->
+  <header class="bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30 transition-shadow duration-300 shadow-sm" id="mainHeader">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Dòng Masthead chính -->
+      <div class="flex items-center justify-between py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800/80">
+        
+        <!-- Logo & Thương hiệu tòa soạn -->
+        <div class="flex items-center space-x-3 sm:space-x-4">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-tr from-red-700 to-red-500 rounded-lg flex items-center justify-center text-white shadow-lg shadow-red-500/20">
+            <i data-lucide="newspaper" class="w-6 h-6 sm:w-7 sm:h-7"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h1 class="font-masthead text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                Thời Báo <span class="text-red-600 dark:text-red-500">24H</span>
+              </h1>
+              <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded border border-slate-200 dark:border-slate-700 hidden sm:inline-block">
+                Tự Hành
+              </span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-serif italic mt-0.5">
+              Cổng thông tin báo chí tự động hóa đa nguồn liên kết Google Sheet & RSS
+            </p>
+          </div>
+        </div>
+
+        <!-- Bộ công cụ bên phải (Search, Dark mode, Sheet Sync Button) -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Thanh tìm kiếm mở nhanh -->
+          <div class="relative hidden lg:block w-64">
+            <input 
+              type="text" 
+              id="searchInputDesktop"
+              placeholder="Tìm kiếm tin bài... (Nhấn /)"
+              class="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-full border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all"
+            >
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2 pointer-events-none"></i>
+            <kbd class="hidden sm:inline-block absolute right-2.5 top-1.5 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded">
+              /
+            </kbd>
+          </div>
+
+          <!-- Nút kích hoạt Search trên Mobile -->
+          <button 
+            onclick="toggleMobileSearch()"
+            class="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full lg:hidden transition"
+            title="Tìm kiếm"
+          >
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+
+          <!-- Nút Trạng thái Đồng bộ Google Sheet -->
+          <button 
+            onclick="openSheetConfigModal()"
+            id="syncStatusButton"
+            class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition"
+            title="Bấm để cấu hình URL Google Sheet hoặc đồng bộ"
+          >
+            <span class="relative flex h-2.5 w-2.5">
+              <span id="syncStatusPulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span id="syncStatusDot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span id="syncStatusText" class="hidden sm:inline">Sheet: Sẵn sàng</span>
+            <i data-lucide="settings" class="w-3.5 h-3.5 text-slate-400 ml-0.5"></i>
+          </button>
+
+          <!-- Nút Bật/Tắt Giao diện Tối/Sáng -->
+          <button 
+            onclick="toggleDarkMode()" 
+            id="themeToggleBtn"
+            class="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            title="Đổi giao diện Sáng / Tối"
+          >
+            <i data-lucide="moon" id="themeIconMoon" class="w-5 h-5"></i>
+            <i data-lucide="sun" id="themeIconSun" class="w-5 h-5 hidden text-amber-400"></i>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Khung tìm kiếm trên Mobile (Ẩn/Hiện) -->
+      <div id="mobileSearchBox" class="hidden py-3 border-b border-slate-100 dark:border-slate-800 lg:hidden">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="searchInputMobile"
+            placeholder="Tìm kiếm theo từ khóa bài viết..."
+            class="w-full pl-10 pr-10 py-2 text-sm bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+          >
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+          <button onclick="clearSearch()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- 3. THANH ĐIỀU HƯỚNG 6 CHUYÊN MỤC TRỌNG TÂM                                -->
+      <!-- ========================================================================= -->
+      <nav class="flex items-center space-x-1 sm:space-x-2 py-2 overflow-x-auto no-scrollbar scroll-smooth">
+        <!-- Tab Tất cả -->
+        <button 
+          onclick="selectCategory('ALL')" 
+          data-category="ALL"
+          class="category-tab active-cat flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-semibold whitespace-nowrap transition bg-red-600 text-white shadow-sm"
+        >
+          <span>Tất cả</span>
+          <span id="badge-count-all" class="text-[10px] bg-white/20 px-1.5 py-0.2 rounded-full">0</span>
+        </button>
+
+        <!-- 1. Thiên tai -->
+        <button 
+          onclick="selectCategory('Thiên tai')" 
+          data-category="Thiên tai"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <span>🚨 Thiên tai</span>
+          <span id="badge-count-thientai" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 rounded-full text-slate-700 dark:text-slate-300">0</span>
+        </button>
+
+        <!-- 2. Thời tiết cực đoan -->
+        <button 
+          onclick="selectCategory('Thời tiết cực đoan')" 
+          data-category="Thời tiết cực đoan"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <span>⛈️ Thời tiết cực đoan</span>
+          <span id="badge-count-thoitiet" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 rounded-full text-slate-700 dark:text-slate-300">0</span>
+        </button>
+
+        <!-- 3. Tai nạn -->
+        <button 
+          onclick="selectCategory('Tai nạn')" 
+          data-category="Tai nạn"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <span>⚠️ Tai nạn</span>
+          <span id="badge-count-tainan" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 rounded-full text-slate-700 dark:text-slate-300">0</span>
+        </button>
+
+        <!-- 4. Chính trị -->
+        <button 
+          onclick="selectCategory('Chính trị')" 
+          data-category="Chính trị"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <span>🏛️ Chính trị</span>
+          <span id="badge-count-chinhtri" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 rounded-full text-slate-700 dark:text-slate-300">0</span>
+        </button>
+
+        <!-- 5. Công nghệ AI -->
+        <button 
+          onclick="selectCategory('Công nghệ AI')" 
+          data-category="Công nghệ AI"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <span>🤖 Công nghệ AI</span>
+          <span id="badge-count-ai" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 rounded-full text-slate-700 dark:text-slate-300">0</span>
+        </button>
+
+        <!-- 6. Thủ thuật IT -->
+        <button 
+          onclick="selectCategory('Thủ thuật IT')" 
+          data-category="Thủ thuật IT"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+        >
+          <span>💻 Thủ thuật IT</span>
+          <span id="badge-count-it" class="text-[10px] bg-slate-200 dark:bg-slate-700 px-1.5 py-0.2 rounded-full text-slate-700 dark:text-slate-300">0</span>
+        </button>
+
+        <!-- Tab Tin Đã Lưu (Bookmarks) -->
+        <button 
+          onclick="selectCategory('BOOKMARKS')" 
+          data-category="BOOKMARKS"
+          class="category-tab flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition ml-auto"
+        >
+          <i data-lucide="bookmark" class="w-3.5 h-3.5 fill-current"></i>
+          <span>Đã lưu</span>
+          <span id="badge-count-bookmarks" class="text-[10px] bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.2 rounded-full text-amber-700 dark:text-amber-300">0</span>
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- 4. KHUNG NỘI DUNG CHÍNH (MAIN CONTAINER)                                  -->
+  <!-- ========================================================================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+    <!-- HERO SECTION: TIN TIÊU ĐIỂM TRANG NHẤT & TIÊU ĐIỂM BUỔI SÁNG -->
+    <section id="heroSection" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- CỘT TRÁI (8 CỘT): TIN TIÊU ĐIỂM SỐ 1 -->
+      <div class="lg:col-span-8 group">
+        <div id="leadStoryContainer" class="bg-white dark:bg-[#131b2e] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition duration-300 flex flex-col h-full cursor-pointer">
+          <!-- Render động qua JS -->
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI (4 CỘT): TIÊU ĐIỂM ĐỌC NHANH BUỔI SÁNG -->
+      <div class="lg:col-span-4 flex flex-col">
+        <div class="bg-white dark:bg-[#131b2e] rounded-xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-full">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+            <h2 class="font-serif font-bold text-slate-900 dark:text-white flex items-center text-sm uppercase tracking-wide">
+              <i data-lucide="sparkles" class="w-4 h-4 text-amber-500 mr-2"></i>
+              Tiêu Điểm Buổi Sáng
+            </h2>
+            <span class="text-[11px] text-slate-400 font-mono">07:00 AM</span>
+          </div>
+
+          <div id="morningDigestList" class="divide-y divide-slate-100 dark:divide-slate-800/80 flex-1 flex flex-col justify-between space-y-2">
+            <!-- Nạp động qua JS -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- THANH BỘ LỌC VÀ TÙY CHỌN HIỂN THỊ -->
+    <section class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-3 border-y border-slate-200 dark:border-slate-800">
+      
+      <!-- Tiêu đề chuyên mục hiện tại -->
+      <div class="flex items-center space-x-2">
+        <h2 id="currentCategoryHeading" class="text-lg sm:text-xl font-bold font-serif text-slate-900 dark:text-white flex items-center">
+          Tất cả tin mới
+        </h2>
+        <span id="filteredCountText" class="text-xs text-slate-500 dark:text-slate-400 font-medium bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+          12 bài viết
+        </span>
+      </div>
+
+      <!-- Tùy chọn lọc nổi bật & Sắp xếp -->
+      <div class="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+        <!-- Lọc mức độ -->
+        <select 
+          id="prominenceFilter" 
+          onchange="onFilterChange()"
+          aria-label="Lọc theo mức độ tin tức"
+          class="text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
+        >
+          <option value="ALL">Mọi mức độ tin</option>
+          <option value="Tin tiêu điểm">⭐ Tin tiêu điểm</option>
+          <option value="Tin nóng">🔥 Tin nóng</option>
+          <option value="Tin thường">Tin thường</option>
+        </select>
+
+        <!-- Sắp xếp -->
+        <select 
+          id="sortOrder" 
+          onchange="onFilterChange()"
+          aria-label="Sắp xếp danh sách tin bài"
+          class="text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
+        >
+          <option value="NEWEST">Mới nhất</option>
+          <option value="OLDEST">Cũ nhất</option>
+          <option value="TITLE_AZ">Tiêu đề A-Z</option>
+        </select>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 5. LƯỚI TIN TỨC ĐA CỘT (MAGAZINE GRID)                                     -->
+    <!-- ========================================================================= -->
+    <section>
+      <!-- Vùng hiển thị thẻ tin -->
+      <div id="articlesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Nạp động qua JS -->
+      </div>
+
+      <!-- Trạng thái trống (Empty State khi không tìm thấy kết quả) -->
+      <div id="emptyState" class="hidden py-16 text-center">
+        <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="inbox" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300 mb-1">Không tìm thấy bài viết phù hợp</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto">Vui lòng thử tìm với từ khóa khác hoặc chuyển sang danh mục tin tức tổng quan.</p>
+        <button onclick="resetFilters()" class="mt-4 px-4 py-2 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
+          Xóa bộ lọc & Hiển thị lại tất cả
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- 6. MODAL / DRAWER CHẾ ĐỘ ĐỌC NHANH (QUICK READING MODE & TTS TIẾNG VIỆT)  -->
+  <!-- ========================================================================= -->
+  <div id="readerModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-sm transition-opacity duration-300">
+    <div class="min-h-screen px-4 text-center flex items-center justify-center py-6 sm:p-0">
+      
+      <!-- Backdrop click to close -->
+      <div class="fixed inset-0 transition-opacity" onclick="closeReaderModal()"></div>
+
+      <!-- Nội dung Modal -->
+      <div class="inline-block w-full max-w-3xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-10 relative">
+        
+        <!-- Header Modal & Nút đóng -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
+          <div class="flex items-center space-x-2">
+            <span id="modalCategoryBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
+              Chuyên mục
+            </span>
+            <span id="modalSourceBadge" class="text-xs font-medium text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+              Nguồn
+            </span>
+            <span id="modalTimeBadge" class="text-xs text-slate-400 font-mono">
+              Thời gian
+            </span>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <!-- Nút Lưu bài viết -->
+            <button 
+              id="modalBookmarkBtn" 
+              onclick="toggleBookmarkFromModal()"
+              class="p-2 text-slate-500 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
+              title="Lưu đọc sau"
+            >
+              <i data-lucide="bookmark" id="modalBookmarkIcon" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Nút Đóng Modal -->
+            <button 
+              onclick="closeReaderModal()"
+              class="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
+              title="Đóng (ESC)"
+            >
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Thân bài báo -->
+        <div class="px-6 sm:px-8 py-6 space-y-6 max-h-[75vh] overflow-y-auto">
+          
+          <!-- Tiêu đề bài báo lớn -->
+          <h2 id="modalTitle" class="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white leading-snug">
+            Tiêu đề bài báo đầy đủ hiển thị ở đây
+          </h2>
+
+          <!-- BỘ ĐỌC TRÍ TUỆ NHÂN TẠO (WEB SPEECH VIETNAMESE & 3-TIER FALLBACK) -->
+          <div class="bg-gradient-to-r from-red-50 via-amber-50 to-orange-50 dark:from-red-950/40 dark:via-amber-950/30 dark:to-orange-950/20 p-4 rounded-xl border border-red-200/80 dark:border-red-900/50 flex flex-col space-y-3 shadow-sm">
+            
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="flex items-center space-x-3 w-full sm:w-auto">
+                <!-- Nút Play / Pause / Stop -->
+                <button 
+                  id="ttsPlayBtn" 
+                  onclick="toggleSpeechSynthesis()"
+                  class="w-11 h-11 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-lg shadow-red-600/30 transition transform active:scale-95 shrink-0"
+                  title="Nghe phát thanh viên đọc bản tin"
+                >
+                  <i data-lucide="volume-2" id="ttsIcon" class="w-5 h-5"></i>
+                </button>
+                
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                    <span class="text-xs font-bold text-slate-900 dark:text-white flex items-center">
+                      <span class="w-2 h-2 rounded-full bg-red-500 mr-1.5 animate-pulse"></span>
+                      Phát Thanh Viên AI (Tiếng Việt)
+                    </span>
+                    <span id="ttsStatusPill" class="text-[10px] px-2 py-0.5 bg-white dark:bg-slate-800 rounded-full text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-semibold shadow-xs">
+                      Sẵn sàng
+                    </span>
+                  </div>
+                  <p id="ttsVoiceInfo" class="text-[11px] text-slate-600 dark:text-slate-400 truncate mt-0.5 font-medium">
+                    Đang nạp bộ giọng tiếng Việt chuẩn...
+                  </p>
+                </div>
+              </div>
+
+              <!-- Tốc độ đọc & Equalizer Animation -->
+              <div class="flex items-center space-x-3 w-full sm:w-auto justify-end shrink-0">
+                <!-- Equalizer animation khi đang phát -->
+                <div id="ttsEqualizer" class="hidden items-end space-x-1 h-5 px-2">
+                  <div class="w-1 bg-red-500 rounded-full animate-soundwave"></div>
+                  <div class="w-1 bg-red-500 rounded-full animate-soundwave [animation-delay:0.2s]"></div>
+                  <div class="w-1 bg-red-500 rounded-full animate-soundwave [animation-delay:0.4s]"></div>
+                  <div class="w-1 bg-red-500 rounded-full animate-soundwave [animation-delay:0.1s]"></div>
+                </div>
+
+                <!-- Nút chọn tốc độ đọc -->
+                <div class="flex items-center bg-white dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700 text-xs shadow-xs">
+                  <button onclick="setTtsRate(0.85)" class="tts-speed-btn px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium hover:text-red-600 transition">0.8x</button>
+                  <button onclick="setTtsRate(1.0)" class="tts-speed-btn px-2.5 py-1 rounded bg-red-600 text-white font-medium shadow-xs">1.0x</button>
+                  <button onclick="setTtsRate(1.25)" class="tts-speed-btn px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium hover:text-red-600 transition">1.2x</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Thanh tiến trình đọc (Sentence Progress Bar) -->
+            <div class="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div id="ttsProgressBar" class="bg-gradient-to-r from-red-600 to-amber-500 h-full rounded-full transition-all duration-300 w-0"></div>
+            </div>
+
+          </div>
+
+          <!-- Ảnh phóng to -->
+          <div class="relative rounded-xl overflow-hidden aspect-video bg-slate-100 dark:bg-slate-800 shadow-md">
+            <img id="modalImage" src="" alt="Thumbnail bài viết" class="w-full h-full object-cover" referrerpolicy="no-referrer" onerror="this.onerror=null; this.src=getFallbackImage(currentModalArticle ? currentModalArticle.category : 'Tin tức');">
+            <div id="modalProminencePill" class="absolute top-3 left-3 px-3 py-1 bg-red-600 text-white text-xs font-bold uppercase rounded-md shadow">
+              Tin Nóng
+            </div>
+          </div>
+
+          <!-- Nội dung tóm tắt chi tiết (TL;DR) -->
+          <div class="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-200 text-base leading-relaxed font-serif">
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border-l-4 border-red-600 mb-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 block mb-1">
+                TÓM TẮT NHANH (TL;DR 2-3 CÂU)
+              </span>
+              <p id="modalTldr" class="editorial-dropcap text-base sm:text-lg text-slate-800 dark:text-slate-100 font-serif leading-relaxed m-0">
+                Đoạn tóm tắt nội dung bài báo...
+              </p>
+            </div>
+          </div>
+
+          <!-- Gợi ý các bài cùng chuyên mục -->
+          <div class="pt-4 border-t border-slate-100 dark:border-slate-800">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center">
+              <i data-lucide="layers" class="w-3.5 h-3.5 mr-1.5"></i>
+              Bài viết cùng chuyên mục
+            </h4>
+            <div id="modalRelatedList" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Nạp động -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer Modal: Nút xem toàn văn tại báo gốc & Chia sẻ -->
+        <div class="flex flex-col sm:flex-row items-center justify-between px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 gap-3">
+          <!-- Các nút chia sẻ nhanh -->
+          <div class="flex items-center space-x-2 text-xs text-slate-500">
+            <span>Chia sẻ:</span>
+            <button onclick="shareArticleModal('copy')" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition" title="Sao chép liên kết">
+              <i data-lucide="copy" class="w-4 h-4"></i>
+            </button>
+            <button onclick="shareArticleModal('facebook')" class="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md transition" title="Chia sẻ Facebook">
+              <i data-lucide="share-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Nút đọc toàn văn tại bài báo gốc -->
+          <a 
+            id="modalOriginalLink" 
+            href="#" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-xs sm:text-sm shadow-md shadow-red-600/20 transition transform active:scale-95"
+          >
+            <span>Đọc toàn văn tại bài báo gốc</span>
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 7. MODAL CẤU HÌNH GOOGLE SHEET & ĐỒNG BỘ DỮ LIỆU                           -->
+  <!-- ========================================================================= -->
+  <div id="sheetConfigModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/70 backdrop-blur-sm transition-opacity duration-300">
+    <div class="min-h-screen px-4 text-center flex items-center justify-center py-6">
+      <div class="fixed inset-0" onclick="closeSheetConfigModal()"></div>
+
+      <div class="inline-block w-full max-w-lg my-8 p-6 text-left align-middle transition-all transform bg-white dark:bg-[#131b2e] rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-10 relative">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+              <i data-lucide="table" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Cấu Hình Kết Nối Google Sheet</h3>
+          </div>
+          <button onclick="closeSheetConfigModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4 py-4 text-xs">
+          <!-- Hướng dẫn nhanh -->
+          <div class="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p class="font-semibold text-slate-800 dark:text-white mb-1">💡 Hướng dẫn kết nối không bị chặn CORS:</p>
+            <ol class="list-decimal pl-4 space-y-1.5 text-[11px]">
+              <li>Mở file Google Sheet của bạn (tạo từ <b>Code.gs</b>).</li>
+              <li>Bấm nút <b>Chia sẻ (Share)</b> ở góc trên bên phải màn hình.</li>
+              <li>Tại mục <i>Quyền truy cập chung</i>, chọn: <b>"Bất kỳ ai có đường liên kết đều có thể xem" (Anyone with the link can view)</b>.</li>
+              <li>Sao chép <b>toàn bộ đường link trên thanh địa chỉ</b> (ID thường dài 44 ký tự) và dán vào ô bên dưới.</li>
+            </ol>
+            <div class="mt-2 pt-2 border-t border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
+              <span class="text-[10px] text-slate-500">Muốn thử nhanh kết nối?</span>
+              <button 
+                type="button"
+                onclick="fillDemoSheetUrl()" 
+                class="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-950/60 dark:text-red-300 rounded text-[10px] font-semibold transition"
+              >
+                Dán link Sheet kiểm thử mẫu
+              </button>
+            </div>
+          </div>
+
+          <!-- Nhập URL / ID Google Sheet -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block font-semibold text-slate-700 dark:text-slate-300">
+                Đường dẫn (URL) hoặc ID Google Sheet:
+              </label>
+              <span id="sheetIdLengthBadge" class="text-[10px] text-slate-400 font-mono"></span>
+            </div>
+            <input 
+              type="text" 
+              id="inputSheetUrl" 
+              oninput="validateSheetInputLength()"
+              placeholder="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit"
+              class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-mono"
+            >
+            <span class="text-[10px] text-slate-400 mt-1 block">Hỗ trợ cả link Google Sheet và link Web App Apps Script (<code>/exec</code>)</span>
+          </div>
+
+          <!-- Nhập Tên Sheet (Tab) -->
+          <div>
+            <label class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Tên trang tính (Sheet Tab Name):
+            </label>
+            <input 
+              type="text" 
+              id="inputSheetTab" 
+              value="TinTuc"
+              class="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-lg border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-red-500 font-mono"
+            >
+            <span class="text-[10px] text-slate-400 mt-1 block">Mặc định được tạo tự động bởi Apps Script là: <b>TinTuc</b></span>
+          </div>
+
+          <!-- Thông báo phản hồi trạng thái kết nối -->
+          <div id="connectionFeedback" class="hidden p-3 rounded-lg text-[11px] font-medium whitespace-pre-line leading-relaxed"></div>
+
+        </div>
+
+        <!-- Các nút thao tác -->
+        <div class="flex flex-col sm:flex-row items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 gap-2">
+          <button 
+            onclick="resetToSampleData()"
+            class="w-full sm:w-auto px-3 py-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+          >
+            Khôi phục dữ liệu mẫu
+          </button>
+
+          <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+            <button 
+              id="btnTestConnection"
+              onclick="testAndSaveSheetConfig()"
+              class="w-full sm:w-auto px-4 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow transition flex items-center justify-center space-x-1.5"
+            >
+              <i data-lucide="refresh-cw" id="btnSyncSpinner" class="w-3.5 h-3.5"></i>
+              <span>Kiểm Tra & Đồng Bộ Ngay</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 8. TOAST NOTIFICATION                                                     -->
+  <!-- ========================================================================= -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 border border-slate-800 text-xs">
+      <div id="toastIcon" class="text-emerald-400">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <div id="toastTitle" class="font-semibold">Thông báo</div>
+        <div id="toastMessage" class="text-slate-400 text-[11px]">Nội dung</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- 9. FOOTER TÒA SOẠN CHÍNH THỨC                                             -->
+  <!-- ========================================================================= -->
+  <footer class="bg-slate-900 text-slate-400 text-xs border-t border-slate-800 mt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <!-- Cột 1: Thông tin chung -->
+        <div class="space-y-3 md:col-span-1">
+          <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 bg-red-600 rounded flex items-center justify-center text-white font-bold">
+              <i data-lucide="newspaper" class="w-4 h-4"></i>
+            </div>
+            <span class="font-masthead text-base font-bold text-white uppercase tracking-tight">THỜI BÁO 24H</span>
+          </div>
+          <p class="text-slate-400 text-[11px] leading-relaxed">
+            Hệ thống tổng hợp và phân phối tin tức chuyên ngành tự động hóa 100%, đồng bộ trực tiếp từ Google Sheet & Apps Script Pipeline.
+          </p>
+        </div>
+
+        <!-- Cột 2: 6 Chuyên mục trọng tâm -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-white text-xs uppercase tracking-wider">6 Chuyên Mục Bắt Buộc</h4>
+          <ul class="space-y-1 text-[11px]">
+            <li><a href="javascript:selectCategory('Thiên tai')" class="hover:text-red-400 transition">🚨 Thiên tai & Khẩn cấp</a></li>
+            <li><a href="javascript:selectCategory('Thời tiết cực đoan')" class="hover:text-red-400 transition">⛈️ Thời tiết cực đoan</a></li>
+            <li><a href="javascript:selectCategory('Tai nạn')" class="hover:text-red-400 transition">⚠️ Tai nạn & Cứu nạn</a></li>
+            <li><a href="javascript:selectCategory('Chính trị')" class="hover:text-red-400 transition">🏛️ Chính trị & Thể chế</a></li>
+            <li><a href="javascript:selectCategory('Công nghệ AI')" class="hover:text-red-400 transition">🤖 Công nghệ AI & LLM</a></li>
+            <li><a href="javascript:selectCategory('Thủ thuật IT')" class="hover:text-red-400 transition">💻 Thủ thuật IT & An toàn mạng</a></li>
+          </ul>
+        </div>
+
+        <!-- Cột 3: Nguồn tin & Cơ chế đồng bộ -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-white text-xs uppercase tracking-wider">Mạng Lưới RSS & Backend</h4>
+          <ul class="space-y-1 text-[11px]">
+            <li>• VnExpress, Tuổi Trẻ, Dân Trí, VietnamNet</li>
+            <li>• Cập nhật tự động: 07:00 AM (Hanoi Time)</li>
+            <li>• Giao thức: Google Visualization (GViz JSONP)</li>
+            <li>• Dự phòng: RFC 4180 CSV Fallback Parser</li>
+            <li>• Cơ chế đệm: LocalStorage Offline-First</li>
+          </ul>
+        </div>
+
+        <!-- Cột 4: Trạng thái hệ thống -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-white text-xs uppercase tracking-wider">Tình Trạng Vận Hành</h4>
+          <div class="p-3 rounded-lg bg-slate-800/80 border border-slate-700/60 text-[11px] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Trạng thái:</span>
+              <span class="text-emerald-400 font-semibold flex items-center">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                Tự Hành 100%
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Giờ cập nhật:</span>
+              <span class="text-slate-200 font-mono">07:00 AM Hàng ngày</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Múi giờ:</span>
+              <span class="text-slate-200">Asia/Ho_Chi_Minh (GMT+7)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
+        <p>© 2026 Cổng Tin Tức Điện Tử Tự Hành - Bản quyền phát triển với Antigravity.</p>
+        <p class="font-mono text-slate-400">Single Page Application • 100% Pure Vanilla JS & Tailwind CSS</p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- 10. TOÀN BỘ LOGIC VANILLA JAVASCRIPT ES6+                                 -->
+  <!-- ========================================================================= -->
+  <script>
+    /**
+     * =========================================================================
+     * APP STATE & CONFIGURATION
+     * =========================================================================
+     */
+    // 👉 CẤU HÌNH LIÊN KẾT GOOGLE SHEET MẶC ĐỊNH CHO GITHUB PAGES:
+    const DEFAULT_CONFIG_SHEET_URL = 'https://docs.google.com/spreadsheets/d/11mhGrhrTpLMUeFV6YHG3XIz-sraC6jVFbXpc48AIUGY/edit?gid=224611075#gid=224611075';
+    const DEFAULT_CONFIG_SHEET_TAB = 'TinTuc';
+
+    const STORAGE_KEY_ARTICLES = 'news_portal_articles_v10_fresh';
+    const STORAGE_KEY_BOOKMARKS = 'news_portal_bookmarks_v2';
+    const STORAGE_KEY_SHEET_URL = 'news_portal_sheet_url_v10_fresh';
+    const STORAGE_KEY_SHEET_TAB = 'news_portal_sheet_tab_v10_fresh';
+    const STORAGE_KEY_THEME = 'news_portal_theme_v2';
+    const STORAGE_KEY_LAST_SYNC = 'news_portal_last_sync_v10';
+
+    // 18 bài viết mẫu phong phú thực tế (3 bài cho mỗi chuyên mục trong 6 chuyên mục)
+    // Đảm bảo trang web hiển thị hoàn chỉnh, lung linh ngay từ lần tải đầu tiên!
+    const DEFAULT_SAMPLE_ARTICLES = [
+      {
+            "stt": 1,
+            "publishedAt": "26/10/2026 16:11",
+            "category": "Công nghệ AI",
+            "title": "Công ty của Elon Musk tung ‘Odyssey’ bản AI, dân mạng chê 'phim rác'",
+            "tldr": "Nền tảng Grok Imagine của Elon Musk công bố một tập 'Odyssey' do AI tạo ra. Trái ngược với kỳ vọng về một bộ phim dài tập chính xác lịch sử như tỉ phú này từng tuyên bố, tác phẩm bị chê thiếu sức sống và chiều sâu nghệ thuật.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/cong-ty-cua-elon-musk-tung-odyssey-ban-ai-dan-mang-che-phim-rac-185261026140914123.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/o1-179299768547478085674-264-49-576-548-crop-1792998430361252943792.png",
+            "prominence": "Tin tiêu điểm"
+      },
+      {
+            "stt": 2,
+            "publishedAt": "26/10/2026 16:00",
+            "category": "Chính trị",
+            "title": "Hai bộ trưởng Tài chính và KH-CN sẽ trả lời chất vấn",
+            "tldr": "Bộ trưởng Tài chính Ngô Văn Tuấn và Bộ trưởng KH-CN Vũ Hải Quân sẽ trả lời chất vấn trước Quốc hội về đầu tư công, thuế, chuyển đổi số và trí tuệ nhân tạo vào ngày 12.11 tới.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/hai-bo-truong-tai-chinh-va-kh-cn-se-tra-loi-chat-van-185261026143347684.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/2-bo-truong-1793000992528293475370.png",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 3,
+            "publishedAt": "26/10/2026 15:50",
+            "category": "Chính trị",
+            "title": "Cựu Thủ tướng Nhật Bản Fukuda Yasuo qua đời",
+            "tldr": "Cựu Thủ tướng Nhật Bản Fukuda Yasuo, người từng thúc đẩy tăng cường quan hệ với Trung Quốc, đã qua đời, hưởng thọ 90 tuổi.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/cuu-thu-tuong-nhat-ban-fukuda-yasuo-qua-doi-185261026154357332.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/2026-10-26t050907z631964176rc2taoa5satfrtrmadp3people-yasuo-fukuda-1793003743579306838745-34-0-1597-2500-crop-17930037810851896702387.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 4,
+            "publishedAt": "26/10/2026 15:40",
+            "category": "Chính trị",
+            "title": "Việt Nam - Ba Lan phối hợp nâng kim ngạch song phương lên 6 tỷ USD",
+            "tldr": "(Dân trí) - Hai Thủ tướng Việt Nam và Ba Lan nhất trí phối hợp nâng kim ngạch thương mại song phương lên 6 tỷ USD vào năm 2030, tạo điều kiện ưu đãi để các doanh nghiệp hai nước thâm nhập thị trường của nhau.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/viet-nam-ba-lan-phoi-hop-nang-kim-ngach-song-phuong-len-6-ty-usd-20261026152350041.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/hoi-dam-1793001433519.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 5,
+            "publishedAt": "26/10/2026 15:39",
+            "category": "Chính trị",
+            "title": "Hai bộ trưởng Bộ Tài chính, Khoa học và Công nghệ sẽ trả lời chất vấn tại Quốc hội",
+            "tldr": "Theo chương trình, Bộ trưởng Bộ Tài chính Ngô Văn Tuấn, Bộ trưởng Bộ Khoa học và Công nghệ Vũ Hải Quân sẽ trả lời chất vấn nhiều nhóm nội dung về đầu tư công, quản lý thuế, thúc đẩy chuyển đổi số.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/hai-bo-truong-bo-tai-chinh-khoa-hoc-va-cong-nghe-se-tra-loi-chat-van-tai-quoc-hoi-100261026153051764.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/ngo-van-tuan-17927209715461344018003-35-0-910-1400-crop-17930032181281113347884.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 6,
+            "publishedAt": "26/10/2026 15:26",
+            "category": "Chính trị",
+            "title": "Chốt 2 bộ trưởng đăng đàn trả lời chất vấn trước Quốc hội",
+            "tldr": "(Dân trí) - Ngày 12/11, Bộ trưởng Tài chính Ngô Văn Tuấn và Bộ trưởng Khoa học và Công nghệ Vũ Hải Quân sẽ trả lời chất vấn trước Quốc hội ngày về các nhóm vấn đề thuộc lĩnh vực quản lý.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/chot-2-bo-truong-dang-dan-tra-loi-chat-van-truoc-quoc-hoi-20261026152213647.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/bo-truong-ngo-van-tuan-1793002782412.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 7,
+            "publishedAt": "26/10/2026 15:18",
+            "category": "Chính trị",
+            "title": "Đại biểu Quốc hội: “Mức phạt giao thông hiện đã quá cao so với thu nhập”",
+            "tldr": "(Dân trí) - Nhận định mức phạt hành chính hiện tại đã ở mức cao, đại biểu Nguyễn Khánh Vũ so sánh một lần vượt đèn đỏ bằng xe máy hiện đã bằng khoảng 83% thu nhập bình quân đầu người một tháng.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/dai-bieu-quoc-hoi-muc-phat-giao-thong-hien-da-qua-cao-so-voi-thu-nhap-20261026150640023.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/20260819154725125817871288344936578006162479096613657800616247909661310334fcef80e8b8b5d9cea46cd1577a7-1793001818604.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 8,
+            "publishedAt": "26/10/2026 15:11",
+            "category": "Thiên tai",
+            "title": "Hai cơn bão liên tiếp quét qua châu Âu, hơn 150.000 hộ dân mất điện",
+            "tldr": "Hai cơn bão Boelo và Austen quét qua châu Âu, khiến hai người chết tại Anh và hàng trăm nghìn hộ mất điện.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/hai-con-bao-lien-tiep-quet-qua-chau-au-hon-150000-ho-dan-mat-dien-100261026150029528.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/anh-1-2-17929994905651283158536-28-0-452-678-crop-17929997785851979716162.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 9,
+            "publishedAt": "26/10/2026 15:10",
+            "category": "Chính trị",
+            "title": "Việt Nam - Ba Lan thiết lập quan hệ Đối tác Chiến lược",
+            "tldr": "(Dân trí) - Hai Thủ tướng Việt Nam và Ba Lan đã thông qua Tuyên bố chung về thiết lập quan hệ Đối tác Chiến lược, đồng thời thống nhất cao việc thúc đẩy hiệu quả các nhóm giải pháp lớn trong quan hệ hai nước.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/viet-nam-ba-lan-thiet-lap-quan-he-doi-tac-chien-luoc-20261026150440209.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/thu-tuong-ba-lanjpg-1793001432909.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 10,
+            "publishedAt": "26/10/2026 15:09",
+            "category": "Chính trị",
+            "title": "Kiều bào tri thức ở châu Âu hứng khởi với cơ hội đóng góp cho quê hương từ xa",
+            "tldr": "Sau cuộc gặp với Tổng Bí thư, Chủ tịch nước Tô Lâm tại châu Âu, TS Nguyễn Thanh Phương, kiều bào tại Luxembourg, bày tỏ niềm vui khi những ý kiến, kiến nghị của các chuyên gia, trí thức kiều bào được lắng nghe, ghi nhận và tin tưởng.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/kieu-bao-tri-thuc-o-chau-au-hung-khoi-voi-co-hoi-dong-gop-cho-que-huong-tu-xa-100261026070827429.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/2aobor8bgaeelc8uvs8usm3pnaeoiu1ytgnvbzok-1792999466928486386763-81-0-756-1080-crop-17929994710641090684005.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 11,
+            "publishedAt": "26/10/2026 14:51",
+            "category": "Chính trị",
+            "title": "Chân dung vị tướng cạnh tranh quyền lực với Thủ tướng Israel",
+            "tldr": "(Dân trí) - Tướng về hưu Gadi Eisenkot được coi là đối thủ nặng ký sẽ cạnh tranh quyền lực với Thủ tướng Benjamin Netanyahu trong cuộc bầu cử vào ngày 27/10 tới.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/the-gioi/chan-dung-vi-tuong-canh-tranh-quyen-luc-voi-thu-tuong-israel-20261026144752847.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/tuong-israel-afp11zon-edited-1793000774723.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 12,
+            "publishedAt": "26/10/2026 14:41",
+            "category": "Công nghệ AI",
+            "title": "Phân đen, có máu, hay đi vệ sinh ban đêm: Khi nào cần khám tiêu hóa?",
+            "tldr": "Những thay đổi về màu sắc, tần suất đại tiện đôi khi phản ánh tình trạng sức khỏe đường tiêu hóa. Phân đen như hắc ín, có máu hoặc thường xuyên thức giấc giữa đêm để đi vệ sinh là những dấu hiệu không nên chủ quan.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/phan-den-co-mau-hay-di-ve-sinh-ban-dem-khi-nao-can-kham-tieu-hoa-185261026144157043.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/huc-giac-giua-dem-de-di-dai-tien-co-the-la-dau-hieu-canh-bao-van-de-suc-khoe-anh-nquyen-tao-tu-chatgpt-1793000193921659313626-0-0-960-1536-crop-1793000239295885362364.png",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 13,
+            "publishedAt": "26/10/2026 14:35",
+            "category": "Thủ thuật IT",
+            "title": "Chuyên gia: AI khiến phương thức bảo mật truyền thống bộc lộ hạn chế",
+            "tldr": "(Dân trí) - AI đang giúp tin tặc rút ngắn thời gian tìm kiếm lỗ hổng, tấn công mạng, đặt ra thách thức mới đối với các doanh nghiệp khi ngày càng nhiều dữ liệu được đưa lên môi trường điện toán đám mây.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/cong-nghe/chuyen-gia-ai-khien-phuong-thuc-bao-mat-truyen-thong-boc-lo-han-che-20261023230216609.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/23/ong-phan-hong-tam-giam-doc-cong-nghe-cloud-cong-ty-fpt-smart-cloud-edited-cropped-1792770030119.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 14,
+            "publishedAt": "26/10/2026 14:29",
+            "category": "Chính trị",
+            "title": "Bỏ giấy phép nhưng không được bỏ trống trách nhiệm quản lý",
+            "tldr": "Về sửa đổi quy định liên quan quản lý, sử dụng vũ khí, vật liệu nổ, công cụ hỗ trợ, Tổng Bí thư, Chủ tịch nước Tô Lâm nhấn mạnh 'bỏ giấy phép nhưng không được bỏ trống trách nhiệm quản lý'.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/bo-giay-phep-nhung-khong-duoc-bo-trong-trach-nhiem-quan-ly-185261026132310222.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/tong-bi-thu-1792995019514795599805-22-22-1530-2434-crop-17929952416241060480123.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 15,
+            "publishedAt": "26/10/2026 14:28",
+            "category": "Tai nạn",
+            "title": "Vé số trăm nghìn tỉ, ai chia sẻ rủi ro với người bán dạo?",
+            "tldr": "Mỗi ngày, hàng trăm ngàn người bán vé số dạo đưa vé đến tay khách hàng, nhưng khi vé ế, bệnh tật hay tai nạn ập đến, họ thường phải tự xoay xở một mình.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/ve-so-tram-nghin-ti-ai-chia-se-rui-ro-voi-nguoi-ban-dao-185261026133340151.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/tnw-vesodaotphcm-3-17929976058971341341288-82-0-1682-2560-crop-17929979174432017230378.jpg",
+            "prominence": "Tin nóng"
+      },
+      {
+            "stt": 16,
+            "publishedAt": "26/10/2026 14:21",
+            "category": "Chính trị",
+            "title": "Hai Bộ trưởng Tài chính, Khoa học và Công nghệ sẽ trả lời chất vấn",
+            "tldr": "Bộ trưởng Tài chính Ngô Văn Tuấn và Bộ trưởng Khoa học và Công nghệ Vũ Hải Quân sẽ trả lời chất vấn trước Quốc hội ngày 12/11 về đầu tư công, thuế, chuyển đổi số và trí tuệ nhân tạo.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/hai-bo-truong-tai-chinh-khoa-hoc-va-cong-nghe-se-tra-loi-chat-van-5136979.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/Unknown57-1792999835-1860-1792999839.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=ElIFbEFZL1NR93lOBbZhkg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 17,
+            "publishedAt": "26/10/2026 14:10",
+            "category": "Công nghệ AI",
+            "title": "Photo AI Agent biến ColorOS 17 thành trợ lý hình ảnh",
+            "tldr": "(Dân trí) - ColorOS 17 hứa hẹn mang đến một trải nghiệm hoàn toàn mới cho người dùng khi nâng cấp AI lên cấp hệ thống với mô hình AI Agent, chủ động hỗ trợ toàn diện từ xử lý hình ảnh đến quản lý công việc.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/cong-nghe/photo-ai-agent-bien-coloros-17-thanh-tro-ly-hinh-anh-20261026002008420.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/oppo-find-x10-theanh-17-1792948542871.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 18,
+            "publishedAt": "26/10/2026 14:08",
+            "category": "Thiên tai",
+            "title": "Bịt mặt, che biển số xe vẫn có thể soi ra khi hạ tầng AI Factory đủ mạnh",
+            "tldr": "Quy hoạch, ứng phó thiên tai hay khoanh vùng sự cố, mọi bài toán của đô thị thông minh đều bắt đầu từ dữ liệu.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/bit-mat-che-bien-so-xe-van-co-the-soi-ra-khi-ha-tang-ai-facetory-du-manh-100261026132205276.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/camera-ai-17923298989991365743928-17-17-1394-2220-crop-17929952249961330064485.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 19,
+            "publishedAt": "26/10/2026 14:06",
+            "category": "Chính trị",
+            "title": "Trung Quốc khai mạc Hội nghị Trung ương 5 khóa XX",
+            "tldr": "Sáng 26-10, Hội nghị toàn thể lần thứ năm Ban Chấp hành Trung ương Đảng Cộng sản Trung Quốc khóa XX (Hội nghị Trung ương 5) đã chính thức khai mạc tại thủ đô Bắc Kinh.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/trung-quoc-khai-mac-hoi-nghi-trung-uong-5-khoa-xx-100261026133623158.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/vcg-17929961557491811051598-0-17-450-737-crop-17929962056991621711062.png",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 20,
+            "publishedAt": "26/10/2026 14:01",
+            "category": "Công nghệ AI",
+            "title": "Chân giò đóng hộp ế ẩm, giám đốc dùng ChatGPT đổi nhãn khâu nhục",
+            "tldr": "(Dân trí) - Sau khi sản xuất món chân giò đóng hộp nhưng khó tiêu thụ, vị giám đốc công ty ở Hà Nội đã sử dụng ChatGPT thiết kế nhãn khâu nhục Lạng Sơn, dán lên sản phẩm để bán trên mạng.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/chan-gio-dong-hop-e-am-giam-doc-dung-chatgpt-doi-nhan-khau-nhuc-20261026135137316.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/khaunhuc-cropped-1792997229211.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 21,
+            "publishedAt": "26/10/2026 13:19",
+            "category": "Tai nạn",
+            "title": "2 cha con tử vong trong vụ cháy nhà lúc rạng sáng",
+            "tldr": "Cơ quan cảnh sát điều tra Công an tỉnh Gia Lai đang phối hợp với các cơ quan liên quan xác minh nguyên nhân vụ cháy khiến hai cha con ông H.K.L. tử vong",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/2-cha-con-tu-vong-trong-vu-chay-nha-luc-rang-sang-2568481.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/26/2-cha-con-tu-vong-trong-vu-chay-nha-luc-rang-sang-1555.jpg?width=0&s=mMbq2unhPpx3QmW3iTVYQQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 22,
+            "publishedAt": "26/10/2026 12:49",
+            "category": "Chính trị",
+            "title": "Tổng Bí thư, Chủ tịch nước: Không để người mua nhà gánh hậu quả sai phạm phòng cháy",
+            "tldr": "Tổng Bí thư, Chủ tịch nước Tô Lâm yêu cầu làm rõ trách nhiệm của chủ đầu tư khi vi phạm quy định phòng cháy, chữa cháy, bảo đảm người mua, thuê nhà không phải gánh chịu hậu quả thay.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/tong-bi-thu-chu-tich-nuoc-khong-de-nguoi-mua-nha-ganh-hau-qua-sai-pham-phong-chay-5136928.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/wm1-wm1-2aobor89cukrzovbc5todfygl6-6696-4061-1792993790.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=ZLt-PzVLMgy8YKjJnW7zKw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 23,
+            "publishedAt": "26/10/2026 12:38",
+            "category": "Tai nạn",
+            "title": "Cơ quan soạn thảo nói về đề xuất bỏ thủ tục phục hồi hoạt động sau khi khắc phục vi phạm PCCC",
+            "tldr": "Cục Cảnh sát phòng cháy chữa cháy và cứu nạn cứu hộ khẳng định việc bãi bỏ thủ tục phục hồi hoạt động không đồng nghĩa với việc hạ thấp các yêu cầu an toàn hay miễn trừ trách nhiệm của tổ chức, cá nhân đối với các vi phạm.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/co-quan-soan-thao-noi-ve-de-xuat-bo-thu-tuc-phuc-hoi-hoat-dong-sau-khi-khac-phuc-vi-pham-pccc-100261026121308798.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/pccc-edit-1792993460371753682119-0-45-1571-2560-crop-1792993516997534893722.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 24,
+            "publishedAt": "26/10/2026 12:38",
+            "category": "Chính trị",
+            "title": "Tổng Bí thư, Chủ tịch nước: Bỏ giấy phép nhưng không được bỏ trống trách nhiệm quản lý",
+            "tldr": "Tổng Bí thư, Chủ tịch nước Tô Lâm cho hay bỏ thủ tục kiểm tra nghiệm thu phòng cháy chữa cháy của cơ quan nhà nước không có nghĩa là bỏ trách nhiệm nghiệm thu của chủ đầu tư, chủ sở hữu trước khi đưa công trình, phương tiện vào sử dụng.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/tong-bi-thu-chu-tich-nuoc-bo-giay-phep-nhung-khong-duoc-bo-trong-trach-nhiem-quan-ly-100261026120923693.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/tbt-ctn12-edit-17929972579781858439107-40-135-1538-2533-crop-17929973624341723836608.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 25,
+            "publishedAt": "26/10/2026 12:24",
+            "category": "Chính trị",
+            "title": "Đề nghị hỗ trợ người dân bị hạn chế quyền sử dụng đất do bảo vệ công trình",
+            "tldr": "(Dân trí) - Đại biểu Quốc hội đề nghị có chính sách hỗ trợ cả trường hợp không bị thu hồi đất nhưng bị hạn chế xây dựng, sử dụng tài sản do yêu cầu bảo vệ công trình quan trọng.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/de-nghi-ho-tro-nguoi-dan-bi-han-che-quyen-su-dung-dat-do-bao-ve-cong-trinh-20261026120512917.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/db-trieu-kim-trung-laichau-1792990179496.png",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 26,
+            "publishedAt": "26/10/2026 12:14",
+            "category": "Chính trị",
+            "title": "Tổng Bí thư, Chủ tịch nước nói về tình trạng làm giả hồ sơ nghiệm thu PCCC",
+            "tldr": "(Dân trí) - Yêu cầu xử lý nghiêm việc xác nhận sai, làm giả hồ sơ để nghiệm thu PCCC, Tổng Bí thư, Chủ tịch nước Tô Lâm cho rằng những hành vi này hoàn toàn có thể xảy ra và để lại hậu quả vô cùng nghiêm trọng.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/tong-bi-thu-chu-tich-nuoc-noi-ve-tinh-trang-lam-gia-ho-so-nghiem-thu-pccc-20261026120611558.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/tong-bi-thu-chu-tich-nuoc-to-lam-edited-1792990452348.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 27,
+            "publishedAt": "26/10/2026 12:04",
+            "category": "Công nghệ AI",
+            "title": "Vụ mua kh&acirc;u nhục nhận cục xương: Gi&aacute;m đốc l&ecirc;n mạng học c&ocirc;ng thức, d&ugrave;ng ChatGPT thay m&aacute;c",
+            "tldr": "Khi thấy sản phẩm Kh u nhục vị Tứ Xuy n của c ng ty kh ng ti u thụ được, Gi m đốc c ng ty TNHH thực phẩm Z FOODDELI đ d ng c ng cụ ChatGPT để thiết kế nh n m c Kh u nhục Thất Kh Lạng Sơn rồi thay v o sản phẩm cũ để b n ra thị trường.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/vu-mua-khau-nhuc-nhan-cuc-xuong-giam-doc-len-mang-hoc-cong-thuc-dung-chatgpt-thay-mac-185261026113001909.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/khau-nhuc-1a-17929884843902004103758-358-0-1158-1280-crop-17929887142771153605494.png",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 28,
+            "publishedAt": "26/10/2026 12:00",
+            "category": "Thủ thuật IT",
+            "title": "'AI giúp hacker khai thác lỗ hổng dưới một ngày'",
+            "tldr": "AI đang rút ngắn thời gian biến lỗ hổng bảo mật thành công cụ tấn công trong vòng 24 giờ, còn nhiều doanh nghiệp mất 1-2 tháng để khắc phục, theo đại diện Microsoft.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/ai-giup-hacker-khai-thac-lo-hong-duoi-mot-ngay-5136791.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/wm1-wm1-img-jpg-1792985026-2170-1792985275.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=obXNZR5PUM1lqKPh4MFIQQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 29,
+            "publishedAt": "26/10/2026 11:31",
+            "category": "Chính trị",
+            "title": "Đề nghị làm rõ trách nhiệm khi chủ đầu tư tự nghiệm thu phòng cháy",
+            "tldr": "Ủy ban Quốc phòng, An ninh và Đối ngoại đề nghị làm rõ trách nhiệm của chủ đầu tư, chủ sở hữu công trình và đơn vị tư vấn khi bỏ thủ tục kiểm tra, chấp thuận kết quả nghiệm thu phòng cháy, chữa cháy.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/de-nghi-lam-ro-trach-nhiem-khi-chu-dau-tu-tu-nghiem-thu-phong-chay-5136811.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/dscf2462-jpg-1792983322-2882-1792983778.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=sXbuVlEGrcrrDbFNjw8WfQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 30,
+            "publishedAt": "26/10/2026 11:31",
+            "category": "Chính trị",
+            "title": "H&oacute;a đơn điện nước &#039;tăng bất thường&#039; do đo sai, người d&acirc;n cần được ho&agrave;n tiền thu thừa",
+            "tldr": "Dẫn v dụ khi h a đơn nước tăng bất thường, đại biểu Quốc hội lưu luật Đo lường cần sửa đổi cho ph p người d n được kiểm tra khi nghi ngờ đo sai v được trả lại khoản tiền thu thừa.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/hoa-don-dien-nuoc-tang-bat-thuong-do-do-sai-nguoi-dan-can-duoc-hoan-tien-thu-thua-185261026105803883.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/base64-17929883340141853227854-13-0-873-1376-crop-1792988739745994791096.jpeg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 31,
+            "publishedAt": "26/10/2026 11:09",
+            "category": "Chính trị",
+            "title": "Toàn cảnh lễ đón Thủ tướng Ba Lan thăm chính thức Việt Nam",
+            "tldr": "(Dân trí) - Sáng 26/10, tại Trụ sở Chính phủ, Thủ tướng Lê Minh Hưng đã chủ trì lễ đón Thủ tướng Ba Lan Donald Tusk thăm chính thức Việt Nam.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/toan-canh-le-don-thu-tuong-ba-lan-tham-chinh-thuc-viet-nam-20261026104902878.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/thu-tuong-ba-lan-tham-vietnam11-1792983060431.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 32,
+            "publishedAt": "26/10/2026 11:05",
+            "category": "Chính trị",
+            "title": "Phải duy trì kiểm định công tơ điện, đồng hồ nước, cột đo xăng dầu hằng ngày",
+            "tldr": "Ngày 26-10, Quốc hội thảo luận ở hội trường về dự án Luật sửa đổi, bổ sung một số điều của Luật Đo lường.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/phai-duy-tri-kiem-dinh-cong-to-dien-dong-ho-nuoc-cot-do-xang-dau-hang-ngay-100261026103334229.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/vu-hai-quan-bo-truong-khcn-edit-no-logo-17929879363511967874020-94-570-917-1886-crop-17929880399161859351699.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 33,
+            "publishedAt": "26/10/2026 10:48",
+            "category": "Chính trị",
+            "title": "Nga nói về thế khó xử của EU liên quan đàm phán giải quyết xung đột Ukraine",
+            "tldr": "Phát ngôn viên Điện Kremlin Dmitry Peskov đánh giá lập trường của Liên minh châu Âu (EU) đối với tiến trình ngoại giao nhằm giải quyết cuộc xung đột Nga - Ukraine “thiếu tính xây dựng”.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/nga-noi-ve-the-kho-xu-cua-eu-lien-quan-dam-phan-giai-quyet-xung-dot-ukraine-2568458.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/26/nga-noi-ve-the-kho-xu-cua-eu-lien-quan-dam-phan-giai-quyet-xung-dot-ukraine-1034.jpg?width=0&s=xO8PJ1peRxGIa8V21HlJFg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 34,
+            "publishedAt": "26/10/2026 10:34",
+            "category": "Chính trị",
+            "title": "Lễ đón chính thức Thủ tướng Ba Lan Donald Tusk",
+            "tldr": "Thủ tướng Lê Minh Hưng chủ trì lễ đón chính thức Thủ tướng Ba Lan Donald Tusk tại trụ sở Chính phủ.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/le-don-chinh-thuc-thu-tuong-ba-lan-donald-tusk-100261026100531428.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/thu-tuong-ba-lan-le-don-1-1792984003779633091372-202-696-1190-2277-crop-17929841697071611451293.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 35,
+            "publishedAt": "26/10/2026 10:26",
+            "category": "Tai nạn",
+            "title": "C&ocirc;ng an Gia Lai điều tra vụ ch&aacute;y nh&agrave; l&agrave;m 2 cha con tử vong",
+            "tldr": "Một vụ ch y nh xảy ra rạng s ng 26.10 tại x Vĩnh Thịnh (Gia Lai) l m 2 cha con tử vong. Cơ quan c ng an đang điều tra, x c định nguy n nh n vụ hỏa hoạn.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/cong-an-gia-lai-dieu-tra-vu-chay-nha-lam-2-cha-con-tu-vong-185261026100737673.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/edit-86206715811107121813412475090608179688170991n-1792983830113849848810-0-0-619-991-crop-1792983954040922035342.jpeg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 36,
+            "publishedAt": "26/10/2026 10:24",
+            "category": "Thiên tai",
+            "title": "Người đứng sau 'cuộc giải cứu Internet' khỏi thảm họa PHP",
+            "tldr": "Dù là tình nguyện viên, Ondrej Sury đóng vai trò chính trong việc triển khai nhanh bản vá lỗi cho hai lỗ hổng PHP2Shell, vốn có thể gây sập mạng Internet.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/nguoi-dung-sau-cuoc-giai-cuu-internet-khoi-tham-hoa-php-5136800.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/OndrejSury-1792980915-7514-1792981016.png?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=w4dsBhuX3GeLnveyto60xA",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 37,
+            "publishedAt": "26/10/2026 10:21",
+            "category": "Tai nạn",
+            "title": "Hai cha con tử vong trong vụ cháy nhà ở Gia Lai",
+            "tldr": "(Dân trí) - Vụ cháy xảy ra tại một ngôi nhà ở thôn Vĩnh Thái, xã Vĩnh Thịnh rạng sáng 26/10 làm hai cha con tử vong. Công an tỉnh Gia Lai đang điều tra làm rõ nguyên nhân.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/hai-cha-con-tu-vong-trong-vu-chay-nha-o-gia-lai-20261026095740787.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/phap-luat-cong-an-dieu-tra-vu-cha-con-chet-chay-trong-nha-tai-gia-laicong-son1-1-1792982899394.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 38,
+            "publishedAt": "26/10/2026 10:20",
+            "category": "Tai nạn",
+            "title": "Cháy nhà ở Gia Lai, hai cha con tử vong",
+            "tldr": "Đám cháy bùng phát tại căn nhà rộng hơn 50 m2 ở xã Vĩnh Thịnh, khiến hai cha con tử vong, hai người bị thương, rạng sáng 26/10.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/chay-nha-o-gia-lai-hai-cha-con-tu-vong-5136818.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/img-1792986104-6624-1792986126.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=I3SOb8eMsuYSom5gXOfqHw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 39,
+            "publishedAt": "26/10/2026 10:18",
+            "category": "Thiên tai",
+            "title": "Người dân Bình Đông, TP.HCM ứng phó trước ngày triều cường đạt đỉnh",
+            "tldr": "TP.HCM trong những ngày sắp tới sẽ vào kỳ triều cường rằm tháng 9 âm lịch, nhiều người dân đã chủ động để ứng phó tránh cảnh “nước đến chân mới nhảy”.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/nguoi-dan-binh-dong-tphcm-ung-pho-truoc-ngay-trieu-cuong-dat-dinh-100261026100547315.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/dan-binh-dong-tphcm-edit-1792985047913321222109-104-0-1704-2560-crop-17929851039501658159008.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 40,
+            "publishedAt": "26/10/2026 10:08",
+            "category": "Chính trị",
+            "title": "Trình Quốc hội tăng 50% mức phạt hành chính tối đa",
+            "tldr": "Chính phủ đề xuất nâng mức phạt hành chính tối đa từ một tỷ lên 1,5 tỷ đồng với cá nhân và từ 2 tỷ lên 3 tỷ đồng với tổ chức, tăng 50% so với hiện hành.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/trinh-quoc-hoi-tang-50-muc-phat-hanh-chinh-toi-da-5136781.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/202610260835256900-g7574298250-9186-6890-1792979501.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=tihmbjLWjagfXt7lujr1iA",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 41,
+            "publishedAt": "26/10/2026 10:06",
+            "category": "Thời tiết cực đoan",
+            "title": "Miền Bắc nắng nóng hiếm gặp",
+            "tldr": "Từ năm 1991 tới nay, miền Bắc mới nắng nóng diện rộng trong tháng 10, một số nơi như Yên Châu (Sơn La), Mường Tè (Lai Châu) lên 38 độ C, vượt kỷ lục cũ 0,8 độ.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/mien-bac-nang-nong-hiem-gap-5136799.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/thu-hn-of-1792980472-7974-1792980514.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=tHSJllbdVMlko5KbGu21bQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 42,
+            "publishedAt": "26/10/2026 09:33",
+            "category": "Tai nạn",
+            "title": "Bộ trưởng Lương Tam Quang tr&igrave;nh nhiều đề xuất mới về ph&ograve;ng ch&aacute;y chữa ch&aacute;y",
+            "tldr": "Dự thảo luật Ph ng ch y chữa ch y v cứu nạn, cứu hộ sửa đổi b i bỏ thủ tục kiểm tra c ng t c nghiệm thu; đề xuất thực hiện hậu kiểm kết hợp với tu n thủ quy định của chủ đầu tư, chủ sở hữu c ng tr nh, chủ phương tiện giao th ng.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/bo-truong-luong-tam-quang-trinh-nhieu-de-xuat-moi-ve-phong-chay-chua-chay-185261026091338743.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/26/1792979302425661737325840570497066173732584057049705ee31bd9c9b9d736090f07f799113702-17929805170391500312796-0-328-939-1831-crop-17929807711021133889589.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 43,
+            "publishedAt": "26/10/2026 09:20",
+            "category": "Thiên tai",
+            "title": "Cận cảnh ngọn núi &amp;apos;mồ côi&amp;apos; nằm giữa lòng phố trước đề xuất san phẳng",
+            "tldr": "Trong tương lai, núi Một (Gia Lai) có thể chỉ còn lại trong hoài niệm, người dân hết cảnh nơm nớp lo sạt lở. Thay vào đó là một khu dân cư đồng bộ về hạ tầng, mở ra diện mạo đô thị mới cho phố biển Quy Nhơn.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/can-canh-ngon-nui-nam-giua-long-pho-truoc-de-xuat-san-phang-de-tranh-sat-lo-2567387.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/26/can-canh-ngon-nui-mo-coi-nam-giua-long-pho-truoc-de-xuat-san-phang-702.jpg?width=0&s=V6Z_QuVQxEZzEk0RaM96nw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 44,
+            "publishedAt": "26/10/2026 09:15",
+            "category": "Chính trị",
+            "title": "Trình Quốc hội việc bãi bỏ thủ tục nghiệm thu phòng cháy chữa cháy",
+            "tldr": "(Dân trí) - Một trong những nội dung trình Quốc hội được Bộ trưởng Công an đề cập là đề xuất bãi bỏ thủ tục kiểm tra công tác nghiệm thu về phòng cháy chữa cháy và thực hiện công tác hậu kiểm.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/trinh-quoc-hoi-viec-bai-bo-thu-tuc-nghiem-thu-phong-chay-chua-chay-20261026091118760.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/05/02/pccc1hoaithanh-1698902291107-1777722081537.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 45,
+            "publishedAt": "26/10/2026 09:06",
+            "category": "Chính trị",
+            "title": "Trình Quốc hội đề xuất chia dữ liệu thành 5 cấp độ rủi ro để bảo vệ",
+            "tldr": "(Dân trí) - Dự thảo Luật An ninh dữ liệu chia dữ liệu thành 5 cấp độ rủi ro, tương ứng với yêu cầu bảo vệ, kiểm toán và kiểm soát chuyển ra nước ngoài.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/trinh-quoc-hoi-de-xuat-chia-du-lieu-thanh-5-cap-do-rui-ro-de-bao-ve-20261026085648790.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/20261026083359960117929785618276578006162479096613g7574298250520479089dd8f4e2f8379c747de91bd8ed6b4030c-1792980263325.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 46,
+            "publishedAt": "26/10/2026 09:06",
+            "category": "Chính trị",
+            "title": "Đại tướng Lương Tam Quang trình Quốc hội đề xuất bỏ thủ tục kiểm tra nghiệm thu phòng cháy, chữa cháy",
+            "tldr": "Đại tướng Lương Tam Quang nêu rõ dự luật đề xuất bãi bỏ thủ tục kiểm tra công tác nghiệm thu về phòng cháy, chữa cháy và thực hiện hậu kiểm kết hợp với kiểm tra.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/dai-tuong-luong-tam-quang-trinh-quoc-hoi-de-xuat-bo-thu-tuc-kiem-tra-nghiem-thu-phong-chay-chua-chay-100261026084657754.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/luong-tam-quang-11-edit-17929887845081327169100-158-430-1183-2070-crop-17929888913601108439503.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 47,
+            "publishedAt": "26/10/2026 08:46",
+            "category": "Chính trị",
+            "title": "Đề xuất nâng mức phạt tiền tối đa về hành chính, thêm biện pháp cưỡng chế",
+            "tldr": "(Dân trí) - Sửa Luật Xử lý vi phạm hành chính, Chính phủ đề xuất nâng mức phạt tiền tối đa lên 1,5 tỷ đồng với cá nhân và 3 tỷ đồng với tổ chức, quy định cụ thể trong luật mức tiền phạt tối đa ở từng lĩnh vực.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/de-xuat-nang-muc-phat-tien-toi-da-ve-hanh-chinh-them-bien-phap-cuong-che-20261026083229695.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/bo-truong-cong-an-luong-tam-uang-edited-1792978892784.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 48,
+            "publishedAt": "26/10/2026 08:00",
+            "category": "Công nghệ AI",
+            "title": "Mối nguy từ các thiết bị AI 'luôn lắng nghe'",
+            "tldr": "Các thiết bị \"sẵn sàng chờ lệnh\" như loa, smartwatch, kính thông minh AI tiềm ẩn nguy cơ thu thập dữ liệu, làm dấy lên lo ngại về quyền riêng tư.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/moi-nguy-tu-cac-thiet-bi-ai-luon-lang-nghe-5134661.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/20/210909123516-mark-zuckerberg-r-6965-9034-1792507166.png?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=EVUx8D5p18Mw1dvZkIFalw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 49,
+            "publishedAt": "26/10/2026 07:30",
+            "category": "Chính trị",
+            "title": "Iran cảnh báo giá dầu tăng lên 150 USD/thùng nếu xung đột tái diễn",
+            "tldr": "Chủ tịch Ủy ban Năng lượng thuộc Quốc hội Iran Mousa Ahmadi cảnh báo giá dầu thô có thể vượt 150 USD/thùng nếu xung đột bùng phát trở lại và nguồn cung dầu toàn cầu tiếp tục gián đoạn.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/iran-canh-bao-gia-dau-tang-len-150-usd-thung-neu-xung-dot-tai-dien-2568396.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/26/thung-neu-xung-dot-tai-dien-350.jpg?width=0&s=sOdhECoZ0inZLed9f94oLQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 50,
+            "publishedAt": "26/10/2026 07:00",
+            "category": "Tai nạn",
+            "title": "Nhận diện tai nạn giao th&ocirc;ng: Xe m&aacute;y giữa d&ograve;ng container",
+            "tldr": "Tr n nhiều tuyến đường chật hẹp ở TP.HCM, xe gắn m y phải chen giữa d ng xe tải, container. Những điểm m , những c chuyển hướng bất ngờ khiến người đi xe 2 b nh đối mặt nhiều nguy hiểm.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/nhan-dien-tai-nan-giao-thong-xe-may-giua-dong-container-185261025185925627.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/25/anh-5-online-179292812307228124449-4-0-644-1024-crop-17929294680541400564525.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 51,
+            "publishedAt": "26/10/2026 06:55",
+            "category": "Chính trị",
+            "title": "Tinh thần &#039;3 kh&ocirc;ng&#039; trong thực hiện dự &aacute;n phục vụ APEC 2027",
+            "tldr": "S ng 25.10, tại đặc khu Ph Quốc (tỉnh An Giang), Ủy vi n Bộ Ch nh trị, Chủ tịch Quốc hội Trần Thanh Mẫn c ng Đo n c ng t c Trung ương l m việc với l nh đạo tỉnh An Giang nhằm kiểm tra tiến độ thực hiện Nghị quyết số 41/2026/QH16 của Quốc hội về cơ chế, ch nh s ch đặc th th o gỡ kh khăn, vướng mắc trong thực hiện c c dự n, c ng tr nh phục vụ Hội nghị cấp cao APEC 2027 tại đặc khu Ph Quốc.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/tinh-than-3-khong-trong-thuc-hien-du-an-phuc-vu-apec-2027-185261025230221727.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/25/photo-1792943764597-17929437656062103890737-66-0-1050-1575-crop-17929437864891619634537.jpeg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 52,
+            "publishedAt": "26/10/2026 06:06",
+            "category": "Thiên tai",
+            "title": "TPHCM và Nam Bộ ngày nắng, đề phòng ngập do triều cường đạt đỉnh",
+            "tldr": "(Dân trí) - TPHCM và Nam Bộ phổ biến ngày nắng, chiều tối và đêm có mưa rào, dông vài nơi. Đáng chú ý, triều cường tại TPHCM có khả năng đạt đỉnh trong các ngày 26-28/10, gây nguy cơ ngập úng tại nhiều khu vực.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-tiet/tphcm-va-nam-bo-ngay-nang-de-phong-ngap-do-trieu-cuong-dat-dinh-20261025184338583.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/09/10/e00d5195-fdca-48d1-a2ba-abd19f8062d31201a-1789054256254.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 53,
+            "publishedAt": "26/10/2026 05:00",
+            "category": "Tai nạn",
+            "title": "Thời sự sáng 26/10: Tai nạn 4 người tử vong ở Hải Phòng",
+            "tldr": "Tai nạn xe máy nghiêm trọng tại Hải Phòng khiến 4 người tử vong; cảnh sát Đà Lạt kịp thời giải cứu một du khách nước ngoài rơi xuống hồ sâu là các tin tức thời sự đáng chú ý sáng 26/10/2026.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/thoi-su-sang-26-10-tai-nan-4-nguoi-tu-vong-o-hai-phong-2568327.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/25/10-tai-nan-4-nguoi-tu-vong-o-hai-phong-1493.jpg?width=0&s=M0iu1jm9U1JE3KFcB_h74g",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 54,
+            "publishedAt": "26/10/2026 04:56",
+            "category": "Chính trị",
+            "title": "Tin tức sáng 26-10: TP.HCM sẽ triển khai nghị quyết hỗ trợ đóng bảo hiểm xã hội cho nhóm yếu thế",
+            "tldr": "Tin tức đáng chú ý: Quốc hội thảo luận sửa Luật Xử lý vi phạm hành chính và nhiều dự luật quan trọng; Bảo hiểm xã hội TP.HCM sẽ triển khai các nghị quyết hỗ trợ đóng bảo hiểm y tế, bảo hiểm xã hội cho nhóm yếu thế...",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/tin-tuc-sang-26-10-tphcm-se-trien-khai-nghi-quyet-ho-tro-dong-bao-hiem-xa-hoi-cho-nhom-yeu-the-100261025215859405.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/25/52547-17929680872521474459243-0-136-630-1144-crop-1792968103640409749060.png",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 55,
+            "publishedAt": "26/10/2026 04:52",
+            "category": "Chính trị",
+            "title": "Thủ tướng Ba Lan Donald Tusk đến Hà Nội, thăm chính thức Việt Nam",
+            "tldr": "(Dân trí) - Chiều 25/10, Thủ tướng Cộng hòa Ba Lan Donald Tusk đến Hà Nội, trong chuyến thăm chính thức Việt Nam từ ngày 24 đến 26/10 theo lời mời của Thủ tướng Chính phủ Lê Minh Hưng.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/thu-tuong-ba-lan-donald-tusk-den-ha-noi-tham-chinh-thuc-viet-nam-20261026065222217.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/26/vna-potal-thu-tuong-ba-lan-donald-tusk-den-ha-noi-tham-chinh-thuc-viet-nam-9111190-1792971825309.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 56,
+            "publishedAt": "26/10/2026 01:00",
+            "category": "Chính trị",
+            "title": "Đại biểu Quốc hội: Cần xử lý nguồn phát tán phim độc hại",
+            "tldr": "Các đại biểu Quốc hội đề nghị xử lý tài khoản, chủ thể phát tán và ngăn phim độc hại tái xuất hiện trên Internet, thay vì chỉ chặn từng đường dẫn vi phạm.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/dai-bieu-quoc-hoi-can-xu-ly-nguon-phat-tan-phim-doc-hai-5136335.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/26/202505011641375501-dsc-1792950-7242-5732-1792950102.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=Qu2EbHV05v5Tvv0WzYZ7Ow",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 57,
+            "publishedAt": "26/10/2026 00:01",
+            "category": "Công nghệ AI",
+            "title": "4 con giáp hút lộc mạnh vào tuần tới",
+            "tldr": "4 con giáp được kỳ vọng bước vào thời kỳ hoàng kim với nhiều cơ hội phát triển sự nghiệp, cải thiện tài chính.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/4-con-giap-vi-tien-rung-rinh-than-tai-mo-cua-don-loc-vao-tuan-toi-5136137.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/25/gemini-generated-image-bf1jxib-9447-1784-1792926104.png?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=BFaP9qkGKKYf9j4mr1eESQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 58,
+            "publishedAt": "25/10/2026 23:42",
+            "category": "Chính trị",
+            "title": "Thủ tướng Ba Lan bất ngờ dạo phố đêm Hà Nội",
+            "tldr": "Thủ tướng Ba Lan Donald Tusk xỏ giày thể thao, thong thả đi bộ trên một con phố không lâu sau khi đến Hà Nội tối 25-10.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/thu-tuong-ba-lan-bat-ngo-dao-pho-dem-ha-noi-100261025232059439.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/26/thu-tuong-ba-lan-ha-noi-1-edit-17929756237651037752896-273-243-1707-2538-crop-1792975699724156363359.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 59,
+            "publishedAt": "25/10/2026 22:42",
+            "category": "Chính trị",
+            "title": "Thủ tướng Ba Lan đến Hà Nội, thăm chính thức Việt Nam",
+            "tldr": "Thủ tướng Ba Lan đến Hà Nội chiều nay, trong khuôn khổ chuyến thăm chính thức Việt Nam theo lời mời của Thủ tướng Lê Minh Hưng.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/thu-tuong-ba-lan-den-ha-noi-tham-chinh-thuc-viet-nam-5136697.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/25/ThtngBaLan-1792937971-9066-1792942399.png?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=dcVjVIG2WyYzoDRLojzkKA",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 60,
+            "publishedAt": "25/10/2026 20:58",
+            "category": "Chính trị",
+            "title": "Hàng nghìn người biểu tình phản đối thủ tướng Israel trước bầu cử quốc hội",
+            "tldr": "Một cuộc biểu tình quy mô lớn phản đối Thủ tướng Israel Benjamin Netanyahu đã diễn ra tại Tel Aviv chỉ vài ngày trước cuộc bầu cử quốc hội của nước này vào ngày 27/10.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/hang-nghin-nguoi-bieu-tinh-phan-doi-thu-tuong-israel-truoc-bau-cu-quoc-hoi-2568337.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/25/israel-bieu-tinh-1570.gif?width=0&s=hrpebDcYkyMB-BiZgNFbqQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 61,
+            "publishedAt": "25/10/2026 20:00",
+            "category": "Công nghệ AI",
+            "title": "Tìm cô gái bình dị và yêu thiên nhiên",
+            "tldr": "Anh chuộng lối sống lành mạnh và kỷ luật; sau giờ làm việc, đam mê lớn nhất của anh là thể thao, đặc biệt là bơi, đạp xe, chạy bộ...",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/tim-co-gai-binh-di-va-yeu-thien-nhien-5135210.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/25/GeminiGeneratedImageut6qeaut6q-5074-9246-1792900038.png?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=9gI7LCRXTUEX7ftoL0J2Mg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 62,
+            "publishedAt": "25/10/2026 19:42",
+            "category": "Chính trị",
+            "title": "Các bộ ưu tiên sắp xếp nhân lực hiện có trước khi điều chỉnh biên chế",
+            "tldr": "(Dân trí) - Để xây dựng phương án biên chế giai đoạn 2027-2031, Thủ tướng nêu định hướng ưu tiên sắp xếp, điều chuyển và sử dụng hiệu quả nhân lực hiện có trước khi đề xuất điều chỉnh biên chế.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/cac-bo-uu-tien-sap-xep-nhan-luc-hien-co-truoc-khi-dieu-chinh-bien-che-20261025191433826.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/25/1-edited-1785479985198-1792930275227.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 63,
+            "publishedAt": "25/10/2026 18:25",
+            "category": "Tai nạn",
+            "title": "Tai nạn xe máy lúc rạng sáng ở Hải Phòng, bốn người tử vong",
+            "tldr": "Tai nạn giao thông trên đường Võ Văn Kiệt, phường Thạch Khôi, TP Hải Phòng khiến bốn thanh thiếu niên ngã ra đường, tử vong.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/tai-nan-xe-may-luc-rang-sang-o-hai-phong-bon-nguoi-tu-vong-2568271.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/25/tai-nan-xe-may-luc-rang-sang-o-hai-phong-bon-nguoi-tu-vong-613.jpeg?width=0&s=NMzi8Qkeg4VFI8Rl5GRnVA",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 64,
+            "publishedAt": "25/10/2026 17:42",
+            "category": "Chính trị",
+            "title": "Chủ tịch Quốc hội lưu ý \"3 không\" khi triển khai dự án phục vụ APEC 2027",
+            "tldr": "(Dân trí) - Triển khai các dự án phục vụ APEC 2027, Chủ tịch Quốc hội lưu ý tinh thần \"3 không\": Không lùi mốc thời gian, không hạ chuẩn an toàn, không để xảy ra sai phạm.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/chu-tich-quoc-hoi-luu-y-3-khong-khi-trien-khai-du-an-phuc-vu-apec-2027-20261025153951908.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/25/chu-tich-quoc-hoictv-1792916150142.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 65,
+            "publishedAt": "25/10/2026 16:38",
+            "category": "Tai nạn",
+            "title": "Đề xuất bỏ nghiệm thu PCCC trước khi đưa công trình vào sử dụng",
+            "tldr": "Tại dự án Luật Phòng cháy chữa cháy và cứu nạn, cứu hộ, Bộ Công an đề xuất bỏ thủ tục kiểm tra công tác nghiệm thu trước khi đưa công trình vào hoạt động.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/de-xuat-bo-nghiem-thu-pccc-truoc-khi-dua-cong-trinh-vao-su-dung-5136605.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/25/C91R7205JPG-1792900431-6472-1792900473.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=OfGiRFI373mhKchMBd5Yqw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 66,
+            "publishedAt": "25/10/2026 16:07",
+            "category": "Chính trị",
+            "title": "Nâng tầm toàn diện quan hệ giữa Việt Nam và các đối tác châu Âu",
+            "tldr": "(Dân trí) - Chuyến công du châu Âu của Tổng Bí thư, Chủ tịch nước Tô Lâm đã thành công tốt đẹp, đạt được nhiều kết quả quan trọng và thực chất, nâng tầm toàn diện quan hệ giữa Việt Nam và các đối tác.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/thoi-su/nang-tam-toan-dien-quan-he-giua-viet-nam-va-cac-doi-tac-chau-au-20261025160124446.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/25/dan-mach-cropped-1792918527273.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 67,
+            "publishedAt": "25/10/2026 13:10",
+            "category": "Tai nạn",
+            "title": "Lặn xuống sông sâu hơn 3 m cứu người nhảy cầu",
+            "tldr": "Phát hiện nam thanh niên nhảy cầu Rào Trổ, anh Nguyễn Hữu Phước lặn xuống đáy sâu hơn 3 m cứu nạn nhân, sáng 25/10.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/lan-xuong-song-sau-hon-3-m-cuu-nguoi-nhay-cau-5136610.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/25/cuunguoihatinh-1792906617-7818-1792906715.gif?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=zNF7KSbYiSfN66uDs6rvZw&amp;t=image",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 68,
+            "publishedAt": "25/10/2026 12:51",
+            "category": "Công nghệ AI",
+            "title": "Bản cập nhật One UI 9 g&acirc;y sự cố cho nhiều d&ograve;ng m&aacute;y Samsung Galaxy",
+            "tldr": "Bản cập nhật One UI 9 dựa tr n Android 17 của Samsung đang vấp phải phản nh khi khiến điện thoại bị treo v sụt pin.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/ban-cap-nhat-one-ui-9-gay-su-co-cho-nhieu-dong-may-samsung-galaxy-18526102510183952.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/25/gemini-17928986584891520967876-0-105-1429-2391-crop-17928987510082136548288.png",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 69,
+            "publishedAt": "25/10/2026 12:00",
+            "category": "Chính trị",
+            "title": "Đề xuất mở rộng nhà cho thuê, ưu tiên người khó khăn",
+            "tldr": "Dự thảo Luật Nhà ở sửa đổi đề xuất phát triển nhà cho thuê bằng vốn Nhà nước, đồng thời bổ sung chính sách ưu tiên tiếp cận nhà ở xã hội cho một số nhóm khó khăn.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/de-xuat-mo-rong-nha-cho-thue-uu-tien-nguoi-kho-khan-5135859.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/23/cg2a8445-1792720596-8366-1792720666.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=-JQwwiDquLqE4UWN4rVAdw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 70,
+            "publishedAt": "25/10/2026 10:06",
+            "category": "Chính trị",
+            "title": "Nga điều 3 tàu chở dầu diesel tới Mỹ theo thỏa thuận Putin - Trump",
+            "tldr": "Phó Thủ tướng Nga Alexander Novak cho biết nước này đã cử 3 tàu chở dầu diesel tới Mỹ theo thỏa thuận đạt được giữa Tổng thống Nga Vladimir Putin và người đồng cấp Mỹ Donald Trump.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/nga-dieu-3-tau-cho-dau-diesel-toi-my-theo-thoa-thuan-putin-trump-2568228.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/25/tram-boc-do-dau-o-nga-248.jpg?width=0&s=EYAuWCUbTr5B9c774Bosyw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 71,
+            "publishedAt": "25/10/2026 10:00",
+            "category": "Thiên tai",
+            "title": "Hai đợt không khí lạnh sắp tăng cường, Nam Bộ đối mặt ngập sâu diện rộng",
+            "tldr": "Không khí lạnh tăng cường kết hợp nhiễu động gió Đông và triều cường rằm tháng 9 âm lịch khiến Nam Bộ đối mặt nguy cơ ngập sâu trên diện rộng trong các ngày 28-29/10.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/hai-dot-khong-khi-lanh-sap-tang-cuong-nam-bo-doi-mat-ngap-sau-dien-rong-2566058.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/25/hai-dot-khong-khi-lanh-sap-tang-cuong-nam-bo-doi-mat-ngap-sau-dien-rong-281.jpg?width=0&s=MOdiuqmzjrCAAHGY_utFfg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 72,
+            "publishedAt": "25/10/2026 09:13",
+            "category": "Chính trị",
+            "title": "Đề xuất tạm hoãn xuất cảnh với người chưa chấp hành xong quyết định xử phạt",
+            "tldr": "Dự thảo Luật Xử lý vi phạm hành chính (sửa đổi) đề xuất bổ sung 5 biện pháp cưỡng chế mới, trong đó có tạm hoãn xuất cảnh, ngừng cung cấp điện, nước và dịch vụ Internet đối với cá nhân, tổ chức không chấp hành quyết định xử phạt.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/de-xuat-tam-hoan-xuat-canh-voi-nguoi-chua-chap-hanh-xong-quyet-dinh-xu-phat-2568176.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/24/pham-van-dong-5-hieu2931-sao-chep-2261.jpg?width=0&s=gfjrCnpiRnCsjHXYjILhhA",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 73,
+            "publishedAt": "25/10/2026 09:00",
+            "category": "Thủ thuật IT",
+            "title": "Kỷ nguyên tấn công mạng AI: 'Sẽ nếm trải cảm giác bầu trời sắp sụp'",
+            "tldr": "Sau khi AI giúp phát hiện lỗ hổng PHP, giới chuyên gia cảnh báo làn sóng sự cố bảo mật và tấn công mạng có thể gây khủng hoảng thời gian tới.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/ky-nguyen-tan-cong-mang-ai-se-nem-trai-cam-giac-bau-troi-sap-sup-5136542.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/25/ca-nh-hacker-php-giu-a-pho-ng-4564-9944-1792867910.png?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=zUZv-_RBK0-oXWB89_m5-A",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 74,
+            "publishedAt": "25/10/2026 07:22",
+            "category": "Thủ thuật IT",
+            "title": "Xử lý thế nào khi quên mã khóa bảo vệ dữ liệu trên VNeID?",
+            "tldr": "(Dân trí) - Nếu quên mã khóa (passcode) bảo vệ dữ liệu trên VNeID, người dùng sẽ không thể truy cập vào các thông tin cá nhân, dữ liệu cũng như thực hiện các thiết lập, nộp hồ sơ trực tuyến… thông qua VNeID.",
+            "source": "Dân Trí",
+            "link": "https://dantri.com.vn/cong-nghe/xu-ly-the-nao-khi-quen-ma-khoa-bao-ve-du-lieu-tren-vneid-20261024011512625.htm",
+            "thumbnail": "https://icdn.dantri.com.vn/2026/10/24/vneid-phien-ban-moi-edited-cropped-1792779241281.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 75,
+            "publishedAt": "25/10/2026 05:00",
+            "category": "Công nghệ AI",
+            "title": "Smartphone giá rẻ đang 'chết'",
+            "tldr": "Những chiếc smartphone rẻ nhất thế giới dần biến mất do bị trung tâm dữ liệu AI \"hút\" chip nhớ, đẩy giá linh kiện lên cao.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/smartphone-gia-re-dang-chet-5134841.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/21/dsc002517895673724476178956764-1341-4415-1792521563.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=3us6pK3dPJhvXfcOgekvpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 76,
+            "publishedAt": "25/10/2026 00:05",
+            "category": "Chính trị",
+            "title": "Bộ Công an nói về đề xuất bỏ một số thủ tục PCCC, chuyển mạnh sang hậu kiểm",
+            "tldr": "Theo đại diện Cục Cảnh sát PCCC amp;CNCH (Bộ Công an), các thủ tục được đề xuất bãi bỏ trong dự án Luật do Chính phủ trình Quốc hội tại Kỳ họp thứ 2 gồm: kiểm tra công tác nghiệm thu, phục hồi hoạt động và cấp phép trước khi lưu thông phương tiện PCCC.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/bo-cong-an-noi-ve-de-xuat-bo-mot-so-thu-tuc-pccc-chuyen-manh-sang-hau-kiem-2568148.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/24/8-copy-dien-tap-pccc-son-la-2215.jpg?width=0&s=fK_CYbcP7Pd-1VnBfqP32Q",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 77,
+            "publishedAt": "24/10/2026 23:00",
+            "category": "Công nghệ AI",
+            "title": "AI đấu với con người trong cuộc đua drone tốc độ cao",
+            "tldr": "Drone do AI điều khiển học bay từ đầu và hoàn thành đường đua ở tốc độ trên 96 km/h, vượt qua những phi công hàng đầu thế giới.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/ai-dau-voi-con-nguoi-trong-cuoc-dua-drone-toc-do-cao-5134728.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/20/VNEDrone-1792488038-3893-1792488472.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=00VdApXjZPjFZ_7FgCLyhQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 78,
+            "publishedAt": "24/10/2026 21:24",
+            "category": "Tai nạn",
+            "title": "Nam thanh niên sống sót sau khi rơi xuống vực tại điểm cực Bắc ở Lũng Cú",
+            "tldr": "Trong lúc tham quan điểm cực Bắc tại xã Lũng Cú (tỉnh Tuyên Quang), một nam du khách 23 tuổi không may rơi xuống vực. Nạn nhân được lực lượng chức năng kịp thời cứu hộ.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/nam-thanh-nien-roi-xuong-vuc-khi-tham-quan-diem-cuc-bac-o-lung-cu-2568141.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/24/nam-thanh-nien-roi-xuong-vuc-khi-tham-quan-diem-cuc-bac-o-lung-cu-1490.jpg?width=0&s=MT-YGMVsoKEqjDGAgZT-KA",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 79,
+            "publishedAt": "24/10/2026 15:21",
+            "category": "Công nghệ AI",
+            "title": "'Bác sĩ cây trồng' trong túi áo: Chụp ảnh chiếc lá, AI bắt bệnh cây trồng trong vài giây",
+            "tldr": "Chỉ cần một chiếc điện thoại thông minh và ứng dụng AI, nông dân đã có thể chụp ảnh chiếc lá bị bệnh và nhận gợi ý tên bệnh cùng cách xử lý chỉ sau vài giây.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/bac-si-cay-trong-trong-tui-ao-chup-anh-chiec-la-ai-bat-benh-cay-trong-trong-vai-giay-100261024143530525.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/24/plantix-2022-india-60-scaled-17928267733471618786379-107-0-1707-2560-crop-17928271534931890066637-0-290-1069-2000-crop-17928346476902141759165.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 80,
+            "publishedAt": "24/10/2026 15:00",
+            "category": "Công nghệ AI",
+            "title": "Sam Altman: Giới toán học chuyển từ tuyệt vọng sang chấp nhận AI",
+            "tldr": "Sam Altman, CEO OpenAI, tin rằng các nhà toán học đang đón nhận AI với thái độ tích cực hơn dù công nghệ này gây nhiều tranh cãi.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/sam-altman-gioi-toan-hoc-chuyen-tu-tuyet-vong-sang-chap-nhan-ai-5136180.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/23/ap26050290105275-1792753651-5010-1792753738.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=BNxowM4EH0vLUN_loAfK_g",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 81,
+            "publishedAt": "24/10/2026 13:00",
+            "category": "Thời tiết cực đoan",
+            "title": "Hơn 50.000 người ở châu Âu tử vong vì nắng nóng kỷ lục năm nay",
+            "tldr": "Mùa hè nóng chưa từng thấy khiến số lượng người tử vong do nhiệt độ cao ở các nước châu Âu tăng vọt trong năm nay.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/hon-50-000-nguoi-o-chau-au-tu-vong-vi-nang-nong-ky-luc-nam-nay-5135997.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/23/VNEHeat-1792731893-5148-1792731941.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=t1-ZInunMPyrfVErm60V3Q",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 82,
+            "publishedAt": "24/10/2026 11:48",
+            "category": "Chính trị",
+            "title": "Chính phủ muốn truy xuất nguồn gốc nguyên liệu thức ăn đường phố",
+            "tldr": "Chính phủ trình Quốc hội quy định người bán thức ăn đường phố phải lưu nguồn gốc nguyên liệu, thông báo địa điểm kinh doanh và cam kết an toàn thực phẩm với chính quyền cấp xã.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/chinh-phu-muon-truy-xuat-nguon-goc-nguyen-lieu-thuc-an-duong-pho-5136324.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/24/2aobor7fb5jmr50f4r0uunnjv3rmrm-7851-3232-1792814016.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=5q9gZKHQn36vbqQIOS4iUw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 83,
+            "publishedAt": "24/10/2026 10:12",
+            "category": "Chính trị",
+            "title": "Israel chuẩn bị cho nguy cơ &amp;apos;mất&amp;apos; nguồn viện trợ quân sự từ Mỹ",
+            "tldr": "Thủ tướng Israel cho rằng Israel có thể sẽ phải đối mặt với các lệnh trừng phạt toàn cầu và nguy cơ mất nguồn viện trợ quân sự từ Mỹ trong tương lai.",
+            "source": "VietnamNet",
+            "link": "https://vietnamnet.vn/israel-chuan-bi-cho-nguy-co-mat-nguon-vien-tro-quan-su-tu-my-2567986.html",
+            "thumbnail": "https://static-images.vnncdn.net/vps_images_publish/000001/000003/2026/10/24/israel-chuan-bi-cho-nguy-co-mat-nguon-vien-tro-quan-su-tu-my-380.jpg?width=0&s=rRriFYEUCCQHSD_HpsN62w",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 84,
+            "publishedAt": "24/10/2026 09:57",
+            "category": "Chính trị",
+            "title": "Đề xuất bỏ 18 thủ tục về sở hữu trí tuệ",
+            "tldr": "Chính phủ đề xuất luật hóa việc bãi bỏ 18 thủ tục hành chính, cắt giảm 5 điều kiện kinh doanh, nhằm đơn giản hóa việc chuyển nhượng quyền sở hữu công nghiệp và bảo hộ giống cây trồng.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/de-xuat-bo-18-thu-tuc-ve-so-huu-tri-tue-5136315.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/24/202610240845157135-g7574298250-9867-3484-1792809310.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=Txw_KQ_m-_BPSonaYghKIw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 85,
+            "publishedAt": "24/10/2026 09:20",
+            "category": "Chính trị",
+            "title": "'Lập vùng phát thải thấp phải tính đến sinh kế người dân'",
+            "tldr": "Chính phủ đề xuất việc thiết lập vùng phát thải thấp phải có lộ trình phù hợp, hạn chế ảnh hưởng đến sinh kế, hoạt động sản xuất, kinh doanh và đời sống người dân.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/lap-vung-phat-thai-thap-phai-tinh-den-sinh-ke-nguoi-dan-5136304.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/24/wm1-wm1-233a2460-1792808694-3453-1792808701.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=_R5K4V8S-kpDHHxXBE8jNg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 86,
+            "publishedAt": "24/10/2026 08:00",
+            "category": "Thiên tai",
+            "title": "Sống khổ trong nhà cổ Hội An",
+            "tldr": "Tại di sản thế giới Hội An, nhiều gia đình mùa mưa bão phải túc trực bưng thau hứng dột, nơm nớp sống dưới những nếp nhà mục ruỗng.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/song-kho-trong-nha-co-hoi-an-5135231.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/21/dsc07665-jpg-1792582734-9440-1792582792.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=jFgfAiStsFkQDo3MSztVqQ",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 87,
+            "publishedAt": "24/10/2026 08:00",
+            "category": "Thủ thuật IT",
+            "title": "48 tiếng không ngủ của giới an ninh mạng",
+            "tldr": "Nhiều chuyên gia bảo mật đang chạy đua, thậm chí thức trắng hai ngày qua để cập nhật bản vá lỗ hổng ẩn trong ngôn ngữ lập trình PHP trước khi tin tặc gây ra những cuộc tấn công diện rộng.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/48-tieng-khong-ngu-cua-gioi-an-ninh-mang-5136169.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/23/DSC00480-JPG-7763-1792752110.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=AkXUJuwLysRPkYtgJDGrGw",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 88,
+            "publishedAt": "24/10/2026 07:16",
+            "category": "Công nghệ AI",
+            "title": "Lần đầu ti&ecirc;n đưa AI t&aacute;c tử v&agrave;o phần cứng c&ocirc;ng nghiệp nặng",
+            "tldr": "Giải ph p AI t c tử hoạt động trực tiếp tại bi n do Schneider Electric, NVIDIA v HPE ph t triển gi p giải quyết ba n t thắt lớn nhất của ng nh c ng nghiệp chế biến gồm chủ quyền dữ liệu, an ninh mạng v chi ph vận h nh.",
+            "source": "Thanh Niên",
+            "link": "https://thanhnien.vn/lan-dau-tien-dua-ai-tac-tu-vao-phan-cung-cong-nghiep-nang-185261023204635326.htm",
+            "thumbnail": "https://images2.thanhnien.vn/zoom/600_315/528068263637045248/2026/10/23/mi-izmantosanu-rupnieciba-1024x572-1792764182972276236798-0-104-572-1019-crop-1792764233452183594637.jpeg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 89,
+            "publishedAt": "23/10/2026 23:22",
+            "category": "Tai nạn",
+            "title": "Trình diễn UAV phát hiện ùn tắc, hỗ trợ CSGT giám sát giao thông",
+            "tldr": "Công an Hưng Yên trình diễn UAV hỗ trợ cảnh sát giao thông phát hiện ùn tắc, sự cố, quan sát hiện trường tai nạn và phục vụ điều hành giao thông.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/trinh-dien-uav-phat-hien-un-tac-ho-tro-csgt-giam-sat-giao-thong-100261023224614729.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/23/4-2-17927699215151031937969-472-531-3648-5612-crop-1792769935706139961793.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 90,
+            "publishedAt": "23/10/2026 20:54",
+            "category": "Công nghệ AI",
+            "title": "TP.HCM đưa AI vào quản trị, không chạy theo trào lưu công nghệ",
+            "tldr": "Theo các chuyên gia, TP.HCM cần ưu tiên ứng dụng AI vào thực tiễn, với yêu cầu về nguồn vốn, chính sách và tác động môi trường khi phát triển AI.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/tphcm-dua-ai-vao-quan-tri-khong-chay-theo-trao-luu-cong-nghe-100261023200906024.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/23/tdee9632-17927594941421609959488-546-750-1239-1859-crop-1792759586430591320868.jpg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 91,
+            "publishedAt": "23/10/2026 19:00",
+            "category": "Công nghệ AI",
+            "title": "Jensen Huang: 'Tận thế AI là nỗ lực gây chú ý rẻ tiền'",
+            "tldr": "Jensen Huang, CEO Nvidia, cho rằng những cảnh báo về việc AI xóa sổ loài người không chính xác mà chỉ nhằm thu hút sự chú ý của dư luận.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/jensen-huang-tan-the-ai-la-no-luc-gay-chu-y-re-tien-5136003.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/23/ap26268019310901-1792733613-1285-1792733957.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=FtyB49X0_RUai40hihPdqg",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 92,
+            "publishedAt": "23/10/2026 18:31",
+            "category": "Chính trị",
+            "title": "Nhiều website chính phủ hoạt động trở lại, khắc phục lỗ hổng PHP có thể mất nhiều năm",
+            "tldr": "Ngày 22-10, nhiều website chính phủ hoạt động trở lại sau khi vá lỗ hổng PHP, nhưng nguy cơ tin tặc khai thác vẫn còn, và việc khắc phục có thể kéo dài nhiều năm.",
+            "source": "Tuổi Trẻ",
+            "link": "<![CDATA[https://tuoitre.vn/nhieu-website-chinh-phu-hoat-dong-tro-lai-khac-phuc-lo-hong-php-co-the-mat-nhieu-nam-1002610231814333.htm]]>",
+            "thumbnail": "https://cdn2.tuoitre.vn/thumb_w/1200/471584752817336320/2026/10/23/lo-hong-php-1792753396817904420403-0-0-382-611-crop-1792753417574471019380.png",
+            "prominence": "Tin thường"
+      },
+      {
+            "stt": 93,
+            "publishedAt": "23/10/2026 17:30",
+            "category": "Công nghệ AI",
+            "title": "'Chung cư' cho heo, chuồng trại AI tại triển lãm chăn nuôi",
+            "tldr": "Mô hình \"chung cư\" cho heo, chăn nuôi tự động bằng AI, máy chế biến thức ăn, xử lý chất thải hiện đại được giới thiệu tại triển lãm Vietstock 2026.",
+            "source": "VnExpress",
+            "link": "https://vnexpress.net/chung-cu-cho-heo-chuong-trai-ai-tai-trien-lam-chan-nuoi-5135894.html",
+            "thumbnail": "https://i1-vnexpress.vnecdn.net/2026/10/23/233a5562-1792742751.jpg?w=1200&amp;h=0&amp;q=100&amp;dpr=1&amp;fit=crop&amp;s=ITSulw1fOdkFEVmDs4xa3Q",
+            "prominence": "Tin thường"
+      }
+];
+
+    // State ứng dụng
+    let articles = [];
+    let currentCategory = 'ALL';
+    let searchQuery = '';
+    let selectedProminence = 'ALL';
+    let selectedSort = 'NEWEST';
+    let bookmarks = new Set();
+    let currentModalArticle = null;
+
+    // Web Speech Vietnamese State (7 Nguyên Tắc Cốt Lõi)
+    let currentSpeechToken = 0;
+    let isSpeaking = false;
+    let ttsRate = 1.0;
+    let bestVietnameseVoice = null;
+    let activeAudioFallback = null;
+    let teleprompterInterval = null;
+    let chromiumKeepAliveTimer = null;
+    let currentTtsText = '';
+
+    /**
+     * =========================================================================
+     * KHỞI TẠO HỆ THỐNG KHI LOAD TRANG
+     * =========================================================================
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Khởi tạo Giao diện Tối/Sáng
+      initTheme();
+
+      // 2. Cập nhật ngày tháng và đồng hồ thời gian thực
+      updateCurrentDate();
+      setInterval(updateLiveClock, 1000);
+      updateLiveClock();
+
+      // 3. Nạp danh sách tin đã lưu (Bookmarks) từ LocalStorage
+      loadBookmarks();
+
+      // 4. Nạp dữ liệu bài viết (Offline-first LocalStorage hoặc Sample Data)
+      loadInitialArticles();
+
+      // 5. Cài đặt các phím tắt và tìm kiếm
+      setupKeyboardShortcuts();
+
+      // 6. Tự động kiểm tra và đồng bộ ngầm nếu người dùng đã cấu hình Sheet URL
+      silentlySyncFromSheetIfConfigured();
+
+      // 7. Khởi tạo giọng đọc Web Speech API
+      initSpeechVoice();
+
+      // Khởi tạo icon Lucide
+      if (window.lucide) lucide.createIcons();
+    });
+
+    /**
+     * =========================================================================
+     * QUẢN LÝ DỮ LIỆU & BỘ NHỚ LOCALSTORAGE
+     * =========================================================================
+     */
+    function loadInitialArticles() {
+      try {
+        const cached = localStorage.getItem(STORAGE_KEY_ARTICLES);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            articles = parsed;
+            updateSyncStatusDisplay(true, "Đã tải từ bộ đệm (LocalStorage)");
+          } else {
+            articles = [...DEFAULT_SAMPLE_ARTICLES];
+          }
+        } else {
+          articles = [...DEFAULT_SAMPLE_ARTICLES];
+          localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(articles));
+        }
+      } catch (e) {
+        console.warn("Lỗi khi đọc LocalStorage:", e);
+        articles = [...DEFAULT_SAMPLE_ARTICLES];
+      }
+
+      renderAll();
+    }
+
+    function loadBookmarks() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY_BOOKMARKS);
+        if (saved) {
+          bookmarks = new Set(JSON.parse(saved));
+        }
+      } catch (e) {
+        bookmarks = new Set();
+      }
+      updateBookmarksBadge();
+    }
+
+    function saveBookmarks() {
+      localStorage.setItem(STORAGE_KEY_BOOKMARKS, JSON.stringify([...bookmarks]));
+      updateBookmarksBadge();
+    }
+
+    function toggleBookmark(articleLink, event) {
+      if (event) event.stopPropagation();
+      if (bookmarks.has(articleLink)) {
+        bookmarks.delete(articleLink);
+        showToast("Đã bỏ lưu", "Đã xóa bài viết khỏi danh sách đọc sau.", "info");
+      } else {
+        bookmarks.add(articleLink);
+        showToast("Đã lưu bài viết", "Bài viết đã được lưu vào mục Đã lưu để đọc sau.", "success");
+      }
+      saveBookmarks();
+      renderAll();
+
+      if (currentModalArticle && currentModalArticle.link === articleLink) {
+        updateModalBookmarkUI();
+      }
+    }
+
+    /**
+     * =========================================================================
+     * KẾT NỐI VÀ ĐỒNG BỘ DỮ LIỆU GOOGLE SHEET (GVIZ JSONP & APPS SCRIPT WEB APP)
+     * =========================================================================
+     */
+    let currentActiveGvizCallback = null;
+
+    // Thiết lập sẵn bộ hook toàn cục cho Google Visualization API
+    // Đảm bảo dù Google trả về callback tùy biến hay setResponse mặc định thì code vẫn bắt được 100%
+    window.google = window.google || {};
+    window.google.visualization = window.google.visualization || {};
+    window.google.visualization.Query = window.google.visualization.Query || {};
+    window.google.visualization.Query.setResponse = function(response) {
+      if (currentActiveGvizCallback && typeof window[currentActiveGvizCallback] === 'function') {
+        window[currentActiveGvizCallback](response);
+      }
+    };
+
+    function extractSpreadsheetInfo(input) {
+      if (!input) return null;
+      input = input.trim();
+
+      // Trường hợp 1: Người dùng dán link Web App của Google Apps Script
+      if (input.includes('script.google.com/macros/s/')) {
+        return { type: 'webapp', url: input };
+      }
+
+      // Trường hợp 2: Link Google Sheet đầy đủ (https://docs.google.com/spreadsheets/d/1xxxx/edit...)
+      const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      if (match && match[1]) {
+        const gidMatch = input.match(/[?&#]gid=(\d+)/);
+        return { 
+          type: 'sheet', 
+          id: match[1],
+          gid: gidMatch ? gidMatch[1] : null
+        };
+      }
+
+      // Trường hợp 3: Người dùng dán trực tiếp ID
+      if (/^[a-zA-Z0-9-_]{20,70}$/.test(input)) {
+        return { type: 'sheet', id: input, gid: null };
+      }
+
+      return null;
+    }
+
+    function validateSheetInputLength() {
+      const inputEl = document.getElementById('inputSheetUrl');
+      const badgeEl = document.getElementById('sheetIdLengthBadge');
+      if (!inputEl || !badgeEl) return;
+
+      const val = inputEl.value.trim();
+      if (!val) {
+        badgeEl.textContent = '';
+        return;
+      }
+
+      const info = extractSpreadsheetInfo(val);
+      if (!info) {
+        badgeEl.textContent = '❌ Link không hợp lệ';
+        badgeEl.className = 'text-[10px] text-red-500 font-medium';
+        return;
+      }
+
+      if (info.type === 'webapp') {
+        badgeEl.textContent = '✓ Apps Script Web App';
+        badgeEl.className = 'text-[10px] text-emerald-500 font-medium';
+        return;
+      }
+
+      const len = info.id.length;
+      if (len < 35) {
+        badgeEl.textContent = `⚠️ ID ngắn (${len}/44 ký tự - có thể thiếu)`;
+        badgeEl.className = 'text-[10px] text-amber-500 font-medium';
+      } else {
+        badgeEl.textContent = `✓ ID chuẩn (${len} ký tự)`;
+        badgeEl.className = 'text-[10px] text-emerald-500 font-medium';
+      }
+    }
+
+    function fillDemoSheetUrl() {
+      const input = document.getElementById('inputSheetUrl');
+      const tab = document.getElementById('inputSheetTab');
+      if (input) input.value = 'https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit';
+      if (tab) tab.value = 'Class Data';
+      validateSheetInputLength();
+      showFeedback(true, 'Đã điền link bảng tính kiểm thử mẫu. Bạn có thể bấm "Kiểm Tra & Đồng Bộ Ngay" để xem thử nghiệm.');
+    }
+
+    function silentlySyncFromSheetIfConfigured() {
+      let savedUrl = localStorage.getItem(STORAGE_KEY_SHEET_URL);
+      const savedInfo = extractSpreadsheetInfo(savedUrl);
+
+      // Nếu trong localStorage đang lưu URL cũ bị lỗi/thiếu ký tự, tự động thay thế bằng link cấu hình chuẩn
+      if (!savedInfo || (savedInfo.type === 'sheet' && savedInfo.id.length < 35)) {
+        savedUrl = (typeof DEFAULT_CONFIG_SHEET_URL !== 'undefined' && DEFAULT_CONFIG_SHEET_URL) ? DEFAULT_CONFIG_SHEET_URL : '';
+        if (savedUrl) {
+          localStorage.setItem(STORAGE_KEY_SHEET_URL, savedUrl);
+          localStorage.setItem(STORAGE_KEY_SHEET_TAB, DEFAULT_CONFIG_SHEET_TAB || 'TinTuc');
+        }
+      }
+
+      const info = extractSpreadsheetInfo(savedUrl);
+      if (info) {
+        fetchSheetData(info, false);
+      } else {
+        updateSyncStatusDisplay('sample', 'Bản tin mẫu tòa soạn (Bấm để kết nối Sheet)');
+      }
+    }
+
+    function fetchSheetData(targetInfo, isManualTrigger = false) {
+      const tabName = (localStorage.getItem(STORAGE_KEY_SHEET_TAB) || 'TinTuc').trim();
+      updateSyncStatusDisplay('loading', 'Đang kết nối Google Sheet...');
+
+      const callbackName = 'onGvizResponse_' + Math.floor(Math.random() * 1000000);
+      currentActiveGvizCallback = callbackName;
+
+      let timeoutHandle = null;
+      let requestResolved = false;
+
+      function cleanup() {
+        const oldScript = document.getElementById('gviz_script_tag');
+        if (oldScript) oldScript.remove();
+        delete window[callbackName];
+        currentActiveGvizCallback = null;
+      }
+
+      // Đăng ký callback động nhận kết quả
+      window[callbackName] = function(response) {
+        requestResolved = true;
+        clearTimeout(timeoutHandle);
+        cleanup();
+
+        if (targetInfo.type === 'webapp') {
+          handleWebAppResponse(response, isManualTrigger);
+        } else {
+          handleGvizResponse(response, isManualTrigger, tabName);
+        }
+      };
+
+      // Xây dựng URL truy vấn không bị chặn CORS
+      let scriptUrl = '';
+      if (targetInfo.type === 'webapp') {
+        const separator = targetInfo.url.includes('?') ? '&' : '?';
+        scriptUrl = `${targetInfo.url}${separator}callback=${callbackName}&_=${Date.now()}`;
+      } else {
+        // Cú pháp chuẩn của Google Visualization: hỗ trợ cả gid và sheet tabName
+        let sheetParam = '';
+        if (targetInfo.gid) {
+          sheetParam = `&gid=${targetInfo.gid}`;
+        } else if (tabName) {
+          sheetParam = `&sheet=${encodeURIComponent(tabName)}`;
+        } else {
+          sheetParam = `&sheet=TinTuc`;
+        }
+        scriptUrl = `https://docs.google.com/spreadsheets/d/${targetInfo.id}/gviz/tq?tqx=out:json;responseHandler:${callbackName}${sheetParam}&tq=${encodeURIComponent('select *')}&_=${Date.now()}`;
+      }
+
+      const script = document.createElement('script');
+      script.id = 'gviz_script_tag';
+      script.src = scriptUrl;
+
+      script.onerror = function() {
+        if (!requestResolved) {
+          clearTimeout(timeoutHandle);
+          cleanup();
+          handleConnectionError(targetInfo, isManualTrigger);
+        }
+      };
+
+      document.body.appendChild(script);
+
+      // Timeout 10 giây
+      timeoutHandle = setTimeout(() => {
+        if (!requestResolved) {
+          cleanup();
+          handleConnectionError(targetInfo, isManualTrigger, true);
+        }
+      }, 10000);
+    }
+
+    function handleConnectionError(targetInfo, isManualTrigger, isTimeout = false) {
+      updateSyncStatusDisplay(false, "Lỗi kết nối");
+
+      if (!isManualTrigger) return;
+
+      if (targetInfo.type === 'sheet') {
+        const idLen = targetInfo.id ? targetInfo.id.length : 0;
+        if (idLen < 35) {
+          showFeedback(false, `❌ LỖI: ĐƯỜNG LINK BẢNG TÍNH BỊ THIẾU KÝ TỰ!\n\n• ID bạn nhập hiện chỉ có ${idLen} ký tự (ví dụ kết thúc bằng "${targetInfo.id.slice(-8)}").\n• Một ID Google Sheet chuẩn luôn dài khoảng 44 ký tự.\n• Cách sửa: Hãy mở Google Sheet trên trình duyệt, bấm chuột vào thanh địa chỉ URL, nhấn Ctrl+A (chọn toàn bộ) -> Ctrl+C (sao chép) rồi dán lại vào ô bên trên.`);
+          return;
+        }
+
+        if (isTimeout) {
+          showFeedback(false, `⏳ KẾT NỐI BỊ TIMEOUT (QUÁ 10 GIÂY):\n\n• Vui lòng kiểm tra lại kết nối mạng internet.\n• Đảm bảo Google Sheet đã mở quyền "Bất kỳ ai có đường liên kết đều có thể xem".`);
+          return;
+        }
+
+        showFeedback(false, `❌ KHÔNG THỂ TRUY CẬP GOOGLE SHEET:\n\n1. Kiểm tra quyền chia sẻ: Mở Google Sheet -> Bấm nút [Chia sẻ] (góc trên bên phải) -> Đổi thành "Bất kỳ ai có đường liên kết đều có thể xem" (Anyone with the link can view).\n2. Kiểm tra tên Tab: Mặc định trong Code.gs là "TinTuc", hãy kiểm tra xem tên tab trên Sheet có đúng không.\n3. Nếu bạn đã tạo Web App trong Apps Script, bạn cũng có thể dán link Web App (/exec) vào đây.`);
+      } else {
+        showFeedback(false, `❌ Không thể kết nối tới Google Apps Script Web App. Hãy đảm bảo bạn đã chọn "Execute as: Me" và "Who has access: Anyone" khi triển khai Web App.`);
+      }
+    }
+
+    function handleGvizResponse(response, isManualTrigger, tabName) {
+      try {
+        if (!response || !response.table || !response.table.rows) {
+          throw new Error(`Cấu trúc bảng Google Sheet không hợp lệ hoặc trang tính "${tabName}" đang rỗng.`);
+        }
+
+        const rows = response.table.rows;
+        if (rows.length === 0) {
+          throw new Error(`Bảng tính "${tabName}" hiện chưa có dòng dữ liệu nào. Hãy chạy hàm chayThuNghiemNgay() trong Code.gs trước.`);
+        }
+
+        // Tự động nhận diện chỉ số cột thông minh theo Header (tránh lệch cột)
+        let colMap = { stt: 0, time: 1, category: 2, title: 3, tldr: 4, source: 5, link: 6, thumb: 7, prominence: 8 };
+
+        // 1. Nhận diện chuẩn xác từ nhãn cột (response.table.cols)
+        if (response.table.cols && response.table.cols.length > 0) {
+          response.table.cols.forEach((col, idx) => {
+            const lbl = (col.label || '').toLowerCase().trim();
+            if (lbl.includes('tiêu đề') || lbl === 'title') colMap.title = idx;
+            else if (lbl.includes('chuyên mục') || lbl === 'category') colMap.category = idx;
+            else if (lbl.includes('tóm tắt') || lbl.includes('tldr')) colMap.tldr = idx;
+            else if (lbl.includes('nguồn') || lbl === 'source') colMap.source = idx;
+            else if (lbl.includes('link') || lbl === 'url') colMap.link = idx;
+            else if (lbl.includes('ảnh') || lbl.includes('thumb') || lbl.includes('image')) colMap.thumb = idx;
+            else if (lbl.includes('thời gian') || lbl.includes('xuất bản') || lbl === 'time') colMap.time = idx;
+            else if (lbl.includes('nổi bật') || lbl.includes('mức độ')) colMap.prominence = idx;
+          });
+        }
+
+        // 2. Kiểm tra nếu dòng 0 là Header tiêu đề cột thật (không lấy bài viết làm header)
+        let startRowIdx = 0;
+        if (rows[0] && rows[0].c) {
+          const firstVal = String((rows[0].c[colMap.title] && (rows[0].c[colMap.title].f || rows[0].c[colMap.title].v)) || '').trim();
+          if (firstVal === 'Tiêu đề bài báo' || firstVal === 'Tiêu đề' || firstVal === 'Title') {
+            startRowIdx = 1; // Bỏ qua dòng tiêu đề thực sự
+          }
+        }
+
+        const parsedArticles = [];
+
+        for (let i = startRowIdx; i < rows.length; i++) {
+          const c = rows[i].c;
+          if (!c) continue;
+
+          // Lấy giá trị ô an toàn
+          const getVal = (colIdx) => {
+            if (!c[colIdx]) return "";
+            if (c[colIdx].f !== null && c[colIdx].f !== undefined) return String(c[colIdx].f).trim();
+            if (c[colIdx].v !== null && c[colIdx].v !== undefined) return String(c[colIdx].v).trim();
+            return "";
+          };
+
+          let title = getVal(colMap.title);
+          let link = getVal(colMap.link);
+          let category = getVal(colMap.category);
+          let tldr = getVal(colMap.tldr);
+          let source = getVal(colMap.source);
+          let thumb = getVal(colMap.thumb);
+          let pubTime = getVal(colMap.time);
+          let prominence = getVal(colMap.prominence);
+
+          // Tự động kiểm tra và phục hồi URL ảnh nếu cột bị lệch
+          const isHttp = (s) => typeof s === 'string' && (s.startsWith('http://') || s.startsWith('https://'));
+          if (!isHttp(thumb)) {
+            for (let j = 0; j < c.length; j++) {
+              const candidate = getVal(j);
+              if (isHttp(candidate) && candidate !== link) {
+                if (candidate.match(/\.(jpe?g|png|webp|gif)/i) || candidate.includes('cdn') || candidate.includes('thumb') || candidate.includes('image')) {
+                  thumb = candidate;
+                  break;
+                }
+              }
+            }
+          }
+
+          // Dự phòng nếu dòng không chuẩn
+          if (!title) {
+            title = getVal(1) || getVal(0);
+          }
+          if (!link) {
+            link = `https://news.google.com?q=${encodeURIComponent(title)}`;
+          }
+
+          if (title && title !== "Tiêu đề bài báo" && title !== "STT") {
+            const artDateMs = parseArticleDate(pubTime);
+            const nowMs = Date.now();
+            // Lọc bỏ triệt để các bài báo cũ quá 7 ngày nếu trên Sheet còn tồn tại từ trước
+            if (artDateMs > 0 && (nowMs - artDateMs > 7 * 24 * 60 * 60 * 1000)) {
+              continue;
+            }
+
+            parsedArticles.push({
+              stt: parseInt(getVal(colMap.stt)) || (parsedArticles.length + 1),
+              publishedAt: pubTime || formatDateNow(),
+              category: category || "Công nghệ AI",
+              title: title,
+              tldr: tldr || title,
+              source: source || "Báo chí",
+              link: link,
+              thumbnail: thumb || getFallbackImage(category),
+              prominence: prominence || "Tin thường"
+            });
+          }
+        }
+
+        if (parsedArticles.length === 0) {
+          throw new Error(`Trang tính "${tabName}" không có dữ liệu bài báo hợp lệ từ dòng 2 trở đi. Vui lòng mở Apps Script và bấm nút [Chạy] hàm chayThuNghiemNgay.`);
+        }
+
+        // Cập nhật State & Lưu LocalStorage
+        articles = parsedArticles;
+        localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(articles));
+        const nowStr = formatTimeNow();
+        localStorage.setItem(STORAGE_KEY_LAST_SYNC, nowStr);
+
+        updateSyncStatusDisplay(true, `Đã đồng bộ lúc ${nowStr}`);
+        renderAll();
+
+        if (isManualTrigger) {
+          showFeedback(true, `🎉 KẾT NỐI THÀNH CÔNG RỰC RỠ!\nĐã tải và hiển thị ${parsedArticles.length} bài báo mới nhất từ Google Sheet.`);
+          showToast("Đồng bộ thành công", `Đã tải ${parsedArticles.length} tin tức từ Google Sheet lúc ${nowStr}`, "success");
+        }
+      } catch (err) {
+        console.error("Lỗi xử lý GViz:", err);
+        updateSyncStatusDisplay(false, "Lỗi dữ liệu Sheet");
+        if (isManualTrigger) {
+          showFeedback(false, `❌ Lỗi: ${err.message}`);
+        }
+      }
+    }
+
+    function handleWebAppResponse(response, isManualTrigger) {
+      try {
+        if (!response || !response.data || !Array.isArray(response.data)) {
+          throw new Error("Dữ liệu trả về từ Apps Script Web App không đúng định dạng.");
+        }
+
+        const rawList = response.data;
+        const parsedArticles = [];
+
+        for (let i = 0; i < rawList.length; i++) {
+          const item = rawList[i];
+          if (!item.title) continue;
+
+          parsedArticles.push({
+            stt: item.stt || (i + 1),
+            publishedAt: item.publishedAt || formatDateNow(),
+            category: item.category || "Công nghệ AI",
+            title: item.title,
+            tldr: item.tldr || item.title,
+            source: item.source || "Báo chí",
+            link: item.link || "#",
+            thumbnail: item.thumbnail || getFallbackImage(item.category),
+            prominence: item.prominence || "Tin thường"
+          });
+        }
+
+        articles = parsedArticles;
+        localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(articles));
+        const nowStr = formatTimeNow();
+        localStorage.setItem(STORAGE_KEY_LAST_SYNC, nowStr);
+
+        updateSyncStatusDisplay(true, `Đã đồng bộ Web App lúc ${nowStr}`);
+        renderAll();
+
+        if (isManualTrigger) {
+          showFeedback(true, `🎉 KẾT NỐI WEB APP THÀNH CÔNG!\nĐã tải ${parsedArticles.length} bài báo từ Google Cloud.`);
+          showToast("Đồng bộ thành công", `Đã tải ${parsedArticles.length} bài báo từ Web App`, "success");
+        }
+      } catch (err) {
+        updateSyncStatusDisplay(false, "Lỗi Web App");
+        if (isManualTrigger) {
+          showFeedback(false, `Lỗi xử lý Web App: ${err.message}`);
+        }
+      }
+    }
+
+    /**
+     * Resilient CSV Parser tuân thủ RFC 4180 (xử lý an toàn dấu phẩy và xuống dòng trong ngoặc kép)
+     */
+    function parseCSV(text) {
+      const rows = [];
+      let currentRow = [];
+      let currentField = '';
+      let insideQuote = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        const next = text[i + 1];
+
+        if (c === '"') {
+          if (insideQuote && next === '"') {
+            currentField += '"';
+            i++; // Skip escaped quote
+          } else {
+            insideQuote = !insideQuote;
+          }
+        } else if (c === ',' && !insideQuote) {
+          currentRow.push(currentField);
+          currentField = '';
+        } else if ((c === '\r' || c === '\n') && !insideQuote) {
+          if (c === '\r' && next === '\n') {
+            i++;
+          }
+          currentRow.push(currentField);
+          if (currentRow.length > 1 || currentRow[0] !== '') {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentField = '';
+        } else {
+          currentField += c;
+        }
+      }
+
+      if (currentField || currentRow.length > 0) {
+        currentRow.push(currentField);
+        rows.push(currentRow);
+      }
+
+      return rows;
+    }
+
+    /**
+     * =========================================================================
+     * THUẬT TOÁN LỌC, TÌM KIẾM & RENDER GIAO DIỆN
+     * =========================================================================
+     */
+    function getFilteredArticles() {
+      return articles.filter(art => {
+        // 1. Lọc theo chuyên mục
+        if (currentCategory === 'BOOKMARKS') {
+          if (!bookmarks.has(art.link)) return false;
+        } else if (currentCategory !== 'ALL') {
+          if (art.category !== currentCategory) return false;
+        }
+
+        // 2. Lọc theo mức độ nổi bật
+        if (selectedProminence !== 'ALL') {
+          if (art.prominence !== selectedProminence) return false;
+        }
+
+        // 3. Tìm kiếm theo từ khóa (Tiêu đề, Tóm tắt, Nguồn)
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          const matchTitle = (art.title || '').toLowerCase().includes(q);
+          const matchTldr = (art.tldr || '').toLowerCase().includes(q);
+          const matchSource = (art.source || '').toLowerCase().includes(q);
+          if (!matchTitle && !matchTldr && !matchSource) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function parseArticleDate(dateStr) {
+      if (!dateStr) return 0;
+      const dmy = String(dateStr).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (dmy) {
+        const day = parseInt(dmy[1], 10);
+        const month = parseInt(dmy[2], 10) - 1;
+        const year = parseInt(dmy[3], 10);
+        const hour = dmy[4] ? parseInt(dmy[4], 10) : 0;
+        const minute = dmy[5] ? parseInt(dmy[5], 10) : 0;
+        const second = dmy[6] ? parseInt(dmy[6], 10) : 0;
+        return new Date(year, month, day, hour, minute, second).getTime();
+      }
+      const t = Date.parse(dateStr);
+      return isNaN(t) ? 0 : t;
+    }
+
+    function getSortedArticles(items) {
+      const arr = [...items];
+      if (selectedSort === 'NEWEST') {
+        arr.sort((a, b) => {
+          const tA = parseArticleDate(a.publishedAt);
+          const tB = parseArticleDate(b.publishedAt);
+          if (tA !== tB) return tB - tA;
+          return (a.stt || 0) - (b.stt || 0);
+        });
+      } else if (selectedSort === 'OLDEST') {
+        arr.sort((a, b) => {
+          const tA = parseArticleDate(a.publishedAt);
+          const tB = parseArticleDate(b.publishedAt);
+          if (tA !== tB) return tA - tB;
+          return (b.stt || 0) - (a.stt || 0);
+        });
+      } else if (selectedSort === 'TITLE_AZ') {
+        arr.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      }
+      return arr;
+    }
+
+    function renderAll() {
+      updateCategoryBadges();
+      renderHeroSection();
+      renderBreakingTicker();
+      renderGrid();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderBreakingTicker() {
+      const marqueeEl = document.getElementById('breakingNewsMarquee');
+      if (!marqueeEl) return;
+
+      const breaking = articles.filter(a => a.prominence === 'Tin tiêu điểm' || a.prominence === 'Tin nóng');
+      const list = breaking.length > 0 ? breaking : articles.slice(0, 5);
+
+      if (list.length === 0) {
+        marqueeEl.innerHTML = '<span class="px-6 flex items-center">Chưa có tin tức mới</span>';
+        return;
+      }
+
+      // Lặp 2 lần để hiệu ứng marquee vô tận mượt mà
+      const itemsHtml = [...list, ...list].map(item => `
+        <span class="inline-flex items-center px-4 hover:underline" onclick="event.stopPropagation(); openReaderModal('${escapeHtml(item.link)}')">
+          <span class="text-yellow-300 font-bold mr-2 text-xs">● [${item.category}]</span>
+          <span>${escapeHtml(item.title)}</span>
+          <span class="text-red-300 ml-2 font-mono text-[11px]">(${item.publishedAt.split(' ')[1] || ''})</span>
+        </span>
+      `).join('<span class="text-red-400 font-bold">|</span>');
+
+      marqueeEl.innerHTML = itemsHtml;
+    }
+
+    function renderHeroSection() {
+      const leadContainer = document.getElementById('leadStoryContainer');
+      const digestContainer = document.getElementById('morningDigestList');
+
+      if (!leadContainer || !digestContainer) return;
+
+      // 1. Chọn bài viết tiêu điểm (Ưu tiên 'Tin tiêu điểm', hoặc bài đầu tiên)
+      let leadStory = articles.find(a => a.prominence === 'Tin tiêu điểm') || articles[0];
+
+      if (!leadStory) {
+        leadContainer.innerHTML = '<div class="p-8 text-center text-slate-400">Không có bài viết tiêu điểm</div>';
+        digestContainer.innerHTML = '';
+        return;
+      }
+
+      const isBookmarked = bookmarks.has(leadStory.link);
+      const catColor = getCategoryColorClasses(leadStory.category);
+
+      leadContainer.onclick = () => openReaderModal(leadStory.link);
+      leadContainer.innerHTML = `
+        <div class="relative aspect-video sm:aspect-[21/9] overflow-hidden bg-slate-100 dark:bg-slate-800">
+          <img 
+            src="${leadStory.thumbnail}" 
+            alt="${escapeHtml(leadStory.title)}" 
+            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
+            referrerpolicy="no-referrer"
+            onerror="this.onerror=null; this.src='${getFallbackImage(leadStory.category)}'"
+          >
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+          
+          <div class="absolute top-4 left-4 flex flex-wrap gap-2">
+            <span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-red-600 text-white shadow-md">
+              ⭐ TIN TIÊU ĐIỂM TRANG NHẤT
+            </span>
+            <span class="px-2.5 py-1 rounded-md text-xs font-semibold ${catColor.badge}">
+              ${leadStory.category}
+            </span>
+          </div>
+
+          <button 
+            onclick="toggleBookmark('${escapeHtml(leadStory.link)}', event)"
+            class="absolute top-4 right-4 p-2.5 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition"
+            title="${isBookmarked ? 'Bỏ lưu' : 'Lưu đọc sau'}"
+          >
+            <i data-lucide="bookmark" class="w-4 h-4 ${isBookmarked ? 'fill-amber-400 text-amber-400' : ''}"></i>
+          </button>
+        </div>
+
+        <div class="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-center space-x-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span class="font-bold text-red-600 dark:text-red-400">${leadStory.source}</span>
+              <span>•</span>
+              <span class="font-mono">${leadStory.publishedAt}</span>
+              <span>•</span>
+              <span>Ước tính: 2 phút đọc</span>
+            </div>
+
+            <h2 class="font-serif text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug">
+              ${escapeHtml(leadStory.title)}
+            </h2>
+
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-serif leading-relaxed clamp-3">
+              ${escapeHtml(leadStory.tldr)}
+            </p>
+          </div>
+
+          <div class="pt-4 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+            <span class="text-xs font-semibold text-red-600 dark:text-red-400 flex items-center group-hover:translate-x-1 transition duration-200">
+              Đọc bản tin đầy đủ <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </span>
+            <button 
+              onclick="event.stopPropagation(); speakText('${escapeHtml(leadStory.tldr)}')" 
+              class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-slate-700 text-xs transition"
+              title="Nghe tóm tắt"
+            >
+              <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+              <span>Nghe TL;DR</span>
+            </button>
+          </div>
+        </div>
+      `;
+
+      // 2. Chọn 3-4 bài cho Tiêu điểm buổi sáng (khác bài leadStory)
+      const morningArticles = articles.filter(a => a.link !== leadStory.link).slice(0, 4);
+      digestContainer.innerHTML = morningArticles.map(art => {
+        const catCol = getCategoryColorClasses(art.category);
+        return `
+          <div 
+            onclick="openReaderModal('${escapeHtml(art.link)}')"
+            class="py-2.5 flex items-start space-x-3 group/item cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 p-2 rounded-lg transition"
+          >
+            <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">
+              <img 
+                src="${art.thumbnail}" 
+                alt="${escapeHtml(art.title)}" 
+                class="w-full h-full object-cover group-hover/item:scale-105 transition duration-300"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                onerror="this.onerror=null; this.src='${getFallbackImage(art.category)}'"
+              >
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center space-x-1.5 mb-1">
+                <span class="text-[10px] font-semibold px-2 py-0.2 rounded ${catCol.badge}">
+                  ${art.category}
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono">
+                  ${art.publishedAt.split(' ')[1] || ''}
+                </span>
+              </div>
+              <h3 class="font-serif text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 group-hover/item:text-red-600 dark:group-hover/item:text-red-400 clamp-2 leading-snug">
+                ${escapeHtml(art.title)}
+              </h3>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderGrid() {
+      const gridEl = document.getElementById('articlesGrid');
+      const emptyStateEl = document.getElementById('emptyState');
+      const headingEl = document.getElementById('currentCategoryHeading');
+      const countEl = document.getElementById('filteredCountText');
+
+      const filtered = getFilteredArticles();
+      const sorted = getSortedArticles(filtered);
+
+      // Cập nhật tiêu đề chuyên mục và số lượng
+      headingEl.textContent = getCategoryDisplayName(currentCategory);
+      countEl.textContent = `${sorted.length} bài viết`;
+
+      if (sorted.length === 0) {
+        gridEl.innerHTML = '';
+        emptyStateEl.classList.remove('hidden');
+        return;
+      }
+
+      emptyStateEl.classList.add('hidden');
+
+      gridEl.innerHTML = sorted.map(art => {
+        const isBookmarked = bookmarks.has(art.link);
+        const catCol = getCategoryColorClasses(art.category);
+        const isHot = art.prominence === 'Tin tiêu điểm' || art.prominence === 'Tin nóng';
+
+        return `
+          <article 
+            onclick="openReaderModal('${escapeHtml(art.link)}')"
+            class="bg-white dark:bg-[#131b2e] rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col group cursor-pointer"
+          >
+            <!-- Card Thumbnail -->
+            <div class="relative aspect-video overflow-hidden bg-slate-100 dark:bg-slate-800">
+              <img 
+                src="${art.thumbnail}" 
+                alt="${escapeHtml(art.title)}" 
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                onerror="this.onerror=null; this.src='${getFallbackImage(art.category)}'"
+              >
+              
+              <!-- Badges -->
+              <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded ${catCol.badge}">
+                  ${art.category}
+                </span>
+                ${isHot ? `
+                  <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-red-600 text-white shadow">
+                    🔥 ${art.prominence}
+                  </span>
+                ` : ''}
+              </div>
+
+              <!-- Nút bookmark nổi -->
+              <button 
+                onclick="toggleBookmark('${escapeHtml(art.link)}', event)"
+                class="absolute top-3 right-3 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition"
+                title="${isBookmarked ? 'Bỏ lưu' : 'Lưu đọc sau'}"
+              >
+                <i data-lucide="bookmark" class="w-3.5 h-3.5 ${isBookmarked ? 'fill-amber-400 text-amber-400' : ''}"></i>
+              </button>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+              <div>
+                <!-- Nguồn & Thời gian -->
+                <div class="flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 font-medium mb-2">
+                  <span class="text-red-600 dark:text-red-400 font-semibold">${art.source}</span>
+                  <span>•</span>
+                  <span class="font-mono">${art.publishedAt}</span>
+                </div>
+
+                <!-- Tiêu đề -->
+                <h3 class="font-serif text-sm sm:text-base font-bold text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition leading-snug clamp-2">
+                  ${escapeHtml(art.title)}
+                </h3>
+
+                <!-- Tóm tắt TL;DR -->
+                <p class="text-xs text-slate-600 dark:text-slate-300 font-serif leading-relaxed mt-2 clamp-3">
+                  ${escapeHtml(art.tldr)}
+                </p>
+              </div>
+
+              <!-- Footer của Card -->
+              <div class="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                <button 
+                  onclick="event.stopPropagation(); speakText('${escapeHtml(art.tldr)}')"
+                  class="flex items-center space-x-1 text-slate-500 hover:text-red-600 dark:hover:text-red-400 transition text-[11px]"
+                  title="Nghe tóm tắt"
+                >
+                  <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                  <span>Nghe</span>
+                </button>
+
+                <span class="text-slate-400 font-medium text-[11px] flex items-center group-hover:text-red-600 transition">
+                  Chi tiết <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i>
+                </span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function updateCategoryBadges() {
+      const getCount = (cat) => articles.filter(a => a.category === cat).length;
+      const setBadge = (id, count) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = count;
+      };
+
+      setBadge('badge-count-all', articles.length);
+      setBadge('badge-count-thientai', getCount('Thiên tai'));
+      setBadge('badge-count-thoitiet', getCount('Thời tiết cực đoan'));
+      setBadge('badge-count-tainan', getCount('Tai nạn'));
+      setBadge('badge-count-chinhtri', getCount('Chính trị'));
+      setBadge('badge-count-ai', getCount('Công nghệ AI'));
+      setBadge('badge-count-it', getCount('Thủ thuật IT'));
+      setBadge('badge-count-bookmarks', bookmarks.size);
+    }
+
+    function updateBookmarksBadge() {
+      const el = document.getElementById('badge-count-bookmarks');
+      if (el) el.textContent = bookmarks.size;
+    }
+
+    function selectCategory(cat) {
+      currentCategory = cat;
+
+      // Cập nhật tab active
+      document.querySelectorAll('.category-tab').forEach(tab => {
+        const tabCat = tab.getAttribute('data-category');
+        if (tabCat === cat) {
+          tab.classList.add('bg-red-600', 'text-white', 'shadow-sm');
+          tab.classList.remove('text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-100');
+        } else {
+          tab.classList.remove('bg-red-600', 'text-white', 'shadow-sm');
+          tab.classList.add('text-slate-600', 'dark:text-slate-300', 'hover:bg-slate-100');
+        }
+      });
+
+      renderGrid();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function onFilterChange() {
+      selectedProminence = document.getElementById('prominenceFilter').value;
+      selectedSort = document.getElementById('sortOrder').value;
+      renderGrid();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function resetFilters() {
+      currentCategory = 'ALL';
+      searchQuery = '';
+      selectedProminence = 'ALL';
+      selectedSort = 'NEWEST';
+
+      const sDesk = document.getElementById('searchInputDesktop');
+      const sMob = document.getElementById('searchInputMobile');
+      if (sDesk) sDesk.value = '';
+      if (sMob) sMob.value = '';
+
+      document.getElementById('prominenceFilter').value = 'ALL';
+      document.getElementById('sortOrder').value = 'NEWEST';
+
+      selectCategory('ALL');
+    }
+
+    /**
+     * =========================================================================
+     * MODAL CHẾ ĐỘ ĐỌC NHANH (QUICK READING MODE)
+     * =========================================================================
+     */
+    function openReaderModal(link) {
+      const art = articles.find(a => a.link === link);
+      if (!art) return;
+
+      currentModalArticle = art;
+
+      document.getElementById('modalTitle').textContent = art.title;
+      document.getElementById('modalTldr').textContent = art.tldr;
+      document.getElementById('modalCategoryBadge').textContent = art.category;
+      document.getElementById('modalSourceBadge').textContent = art.source;
+      document.getElementById('modalTimeBadge').textContent = art.publishedAt;
+      const modalImg = document.getElementById('modalImage');
+      if (modalImg) {
+        modalImg.referrerPolicy = 'no-referrer';
+        modalImg.onerror = function() {
+          this.onerror = null;
+          this.src = getFallbackImage(art.category);
+        };
+        modalImg.src = art.thumbnail || getFallbackImage(art.category);
+      }
+      document.getElementById('modalOriginalLink').href = art.link;
+
+      const prominenceEl = document.getElementById('modalProminencePill');
+      if (art.prominence && art.prominence !== 'Tin thường') {
+        prominenceEl.textContent = art.prominence;
+        prominenceEl.classList.remove('hidden');
+      } else {
+        prominenceEl.classList.add('hidden');
+      }
+
+      updateModalBookmarkUI();
+      renderRelatedArticles(art);
+
+      // Reset TTS khi mở bài mới
+      stopSpeechSynthesis();
+      const best = VietnameseSpeechEngine.getBestVoice();
+      if (best) {
+        updateVoiceInfoUI(`🔊 Giọng: ${best.name} [${best.lang}]`, false);
+      } else {
+        updateVoiceInfoUI("ℹ️ Thiết bị chưa có giọng tiếng Việt. Sẵn sàng dùng giọng Online dự phòng.", true);
+      }
+
+      document.getElementById('readerModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeReaderModal() {
+      stopSpeechSynthesis();
+      document.getElementById('readerModal').classList.add('hidden');
+      document.body.style.overflow = '';
+      currentModalArticle = null;
+    }
+
+    function updateModalBookmarkUI() {
+      if (!currentModalArticle) return;
+      const isSaved = bookmarks.has(currentModalArticle.link);
+      const icon = document.getElementById('modalBookmarkIcon');
+      if (icon) {
+        if (isSaved) {
+          icon.classList.add('fill-amber-400', 'text-amber-400');
+        } else {
+          icon.classList.remove('fill-amber-400', 'text-amber-400');
+        }
+      }
+    }
+
+    function toggleBookmarkFromModal() {
+      if (!currentModalArticle) return;
+      toggleBookmark(currentModalArticle.link);
+    }
+
+    function renderRelatedArticles(currentArt) {
+      const container = document.getElementById('modalRelatedList');
+      if (!container) return;
+
+      const related = articles
+        .filter(a => a.category === currentArt.category && a.link !== currentArt.link)
+        .slice(0, 2);
+
+      if (related.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400 col-span-2">Không có bài viết liên quan khác trong chuyên mục này.</span>';
+        return;
+      }
+
+      container.innerHTML = related.map(item => `
+        <div 
+          onclick="openReaderModal('${escapeHtml(item.link)}')"
+          class="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:border-red-500 dark:hover:border-red-500 flex items-center space-x-3 cursor-pointer transition bg-slate-50/50 dark:bg-slate-800/30"
+        >
+          <img src="${item.thumbnail}" alt="" class="w-12 h-12 rounded object-cover shrink-0" onerror="this.src='${getFallbackImage(item.category)}'">
+          <div class="min-w-0">
+            <h5 class="font-serif text-xs font-bold text-slate-800 dark:text-slate-100 clamp-2">${escapeHtml(item.title)}</h5>
+            <span class="text-[10px] text-slate-400 font-mono">${item.publishedAt}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openLeadOrBreakingStory() {
+      const target = articles.find(a => a.prominence === 'Tin tiêu điểm') || articles[0];
+      if (target) openReaderModal(target.link);
+    }
+
+    function shareArticleModal(type) {
+      if (!currentModalArticle) return;
+      const url = currentModalArticle.link;
+      const title = currentModalArticle.title;
+
+      if (type === 'copy') {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url);
+          showToast("Đã sao chép liên kết", url, "success");
+        } else {
+          prompt("Sao chép liên kết bài báo:", url);
+        }
+      } else if (type === 'facebook') {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+      }
+    }
+
+    // =============================================================================
+    // BỘ ĐIỀU PHỐI GIỌNG ĐỌC TIẾNG VIỆT CHUẨN TRÊN WEB APP (VIETNAMESE TTS ENGINE)
+    // =============================================================================
+    const VietnameseSpeechEngine = (function () {
+      let speechToken = 0;
+      let cachedVoices = [];
+      let voiceWaitDone = false;
+      let activeAudio = null;
+      let speechRate = 1.0;
+      let keepAliveInterval = null;
+
+      function refreshVoices() {
+        if (!window.speechSynthesis) return [];
+        try {
+          cachedVoices = window.speechSynthesis.getVoices() || [];
+        } catch (e) {
+          cachedVoices = [];
+        }
+        return cachedVoices;
+      }
+
+      function isViVoice(v) {
+        const l = String(v.lang || "").replace("_", "-").toLowerCase();
+        const n = String(v.name || "").toLowerCase();
+        return (
+          l === "vi" ||
+          l.startsWith("vi-") ||
+          n.includes("vietnam") ||
+          n.includes("vietnamese") ||
+          n.includes("tiếng việt") ||
+          n.includes("hoài my") ||
+          n.includes("hoaimy") ||
+          n.includes("nam minh") ||
+          n.includes("namminh") ||
+          n.includes("linh") ||
+          n.includes("mai") ||
+          n.includes("an")
+        );
+      }
+
+      if (window.speechSynthesis) {
+        refreshVoices();
+        window.speechSynthesis.onvoiceschanged = refreshVoices;
+      }
+
+      function waitForVoices(maxMs = 3000) {
+        return new Promise((resolve) => {
+          if (!window.speechSynthesis) return resolve(false);
+          if (refreshVoices().some(isViVoice)) return resolve(true);
+
+          const t0 = Date.now();
+          const timer = setInterval(() => {
+            const has = refreshVoices().some(isViVoice);
+            if (has || Date.now() - t0 >= maxMs) {
+              clearInterval(timer);
+              resolve(has);
+            }
+          }, 150);
+        });
+      }
+
+      function getBestVoice() {
+        const viList = refreshVoices().filter(isViVoice);
+        if (!viList.length) return null;
+
+        const score = (v) => {
+          const n = String(v.name || "").toLowerCase();
+          let sc = 0;
+          if (n.includes("natural") || n.includes("online")) sc += 40;
+          if (n.includes("hoaimy") || n.includes("hoài my") || n.includes("namminh") || n.includes("nam minh")) sc += 25;
+          if (n.includes("google")) sc += 20;
+          if (n.includes("microsoft")) sc += 10;
+          if (String(v.lang).replace("_", "-").toLowerCase() === "vi-vn") sc += 5;
+          return sc;
+        };
+
+        return viList.sort((a, b) => score(b) - score(a))[0];
+      }
+
+      function splitTextIntoChunks(text, maxLen = 140) {
+        const clean = String(text).replace(/\s+/g, " ").trim();
+        const sentences = clean.match(/[^.!?;:]+[.!?;:]*\s*/g) || [clean];
+        const chunks = [];
+        let cur = "";
+
+        const flush = () => {
+          if (cur.trim()) chunks.push(cur.trim());
+          cur = "";
+        };
+
+        sentences.forEach((sent) => {
+          if ((cur + sent).length <= maxLen) {
+            cur += sent;
+          } else {
+            flush();
+            if (sent.length <= maxLen) {
+              cur = sent;
+            } else {
+              (sent.match(/[^,]+,?\s*/g) || [sent]).forEach((part) => {
+                if ((cur + part).length <= maxLen) cur += part;
+                else { flush(); cur = part; }
+              });
+            }
+          }
+        });
+        flush();
+        return chunks;
+      }
+
+      function stop() {
+        speechToken++;
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
+        }
+        if (window.speechSynthesis) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+        if (activeAudio) {
+          try {
+            activeAudio.onended = null;
+            activeAudio.onerror = null;
+            activeAudio.pause();
+            activeAudio.removeAttribute("src");
+            activeAudio.load();
+          } catch (e) {}
+          activeAudio = null;
+        }
+      }
+
+      function pause() {
+        if (activeAudio && !activeAudio.paused) {
+          activeAudio.pause();
+        } else if (window.speechSynthesis && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+          window.speechSynthesis.pause();
+        }
+      }
+
+      function resume() {
+        if (activeAudio && activeAudio.paused) {
+          activeAudio.play();
+        } else if (window.speechSynthesis && window.speechSynthesis.paused) {
+          window.speechSynthesis.resume();
+        }
+      }
+
+      function setRate(r) {
+        speechRate = Math.max(0.5, Math.min(2.0, Number(r) || 1.0));
+        if (activeAudio) activeAudio.playbackRate = speechRate;
+      }
+
+      // Tầng 2: Giọng đọc Online Google Translate TTS đa Mirror
+      function speakOnlineFallback(text, token, options) {
+        const chunks = splitTextIntoChunks(text, 120);
+        let idx = 0;
+        let mirrorIdx = 0;
+
+        const mirrors = [
+          (q) => `https://translate.googleapis.com/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${q}`,
+          (q) => `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=vi&q=${q}`,
+          (q) => `https://translate.google.com.vn/translate_tts?ie=UTF-8&client=tw-ob&tl=vi&q=${q}`
+        ];
+
+        // Khởi tạo audio duy nhất
+        if (!activeAudio) {
+          activeAudio = new Audio();
+        }
+        const audio = activeAudio;
+
+        const silentFallback = () => {
+          if (token !== speechToken) return;
+          if (options.onStatus) options.onStatus("⚠️ Giọng online tạm thời bận. Đang chạy chế độ phụ đề tự động.", true);
+          const readMs = Math.max(5000, (String(text).length * 75) / speechRate);
+          setTimeout(() => {
+            if (token === speechToken && options.onend) options.onend();
+          }, readMs);
+        };
+
+        const playNext = () => {
+          if (token !== speechToken) return;
+          if (idx >= chunks.length) {
+            if (options.onend) options.onend();
+            return;
+          }
+
+          const chunk = chunks[idx];
+          if (options.onStatus) {
+            options.onStatus(`🔊 Đang đọc: "${chunk.slice(0, 30)}..." (Giọng Google Online)`, false);
+          }
+
+          const q = encodeURIComponent(chunk);
+          const currentUrl = mirrors[mirrorIdx % mirrors.length](q);
+
+          audio.src = currentUrl;
+          audio.playbackRate = speechRate;
+
+          audio.onended = () => {
+            if (token !== speechToken) return;
+            idx++;
+            mirrorIdx = 0; // reset mirror khi đọc thành công
+            playNext();
+          };
+
+          audio.onerror = (err) => {
+            console.warn("TTS mirror failed:", mirrorIdx, err);
+            mirrorIdx++;
+            if (mirrorIdx < mirrors.length) {
+              // Thử mirror khác
+              playNext();
+            } else {
+              // Hết mirror -> thử câu tiếp theo hoặc silent
+              idx++;
+              mirrorIdx = 0;
+              if (idx < chunks.length) {
+                playNext();
+              } else {
+                silentFallback();
+              }
+            }
+          };
+
+          const playPromise = audio.play();
+          if (playPromise && playPromise.catch) {
+            playPromise.catch((err) => {
+              console.warn("Audio play() blocked/failed:", err);
+              silentFallback();
+            });
+          }
+        };
+
+        playNext();
+      }
+
+      // Tầng 1: Web Speech API chuẩn (Đọc nối tiếp + Chống ngắt tiếng 15s Chromium)
+      async function speak(text, options = {}) {
+        stop();
+        const token = ++speechToken;
+        const hasVoices = window.speechSynthesis ? await waitForVoices(2000) : false;
+        if (token !== speechToken) return;
+
+        const voice = hasVoices ? getBestVoice() : null;
+
+        if (voice) {
+          if (options.onStatus) {
+            options.onStatus(`🔊 Giọng: ${voice.name} [${voice.lang}]`, false);
+          }
+          window.speechSynthesis.cancel();
+          const chunks = splitTextIntoChunks(text, 150);
+          let chunkIdx = 0;
+
+          // Bộ giữ nhịp Chromium 15s (Chromium keep-alive)
+          if (keepAliveInterval) clearInterval(keepAliveInterval);
+          keepAliveInterval = setInterval(() => {
+            if (token !== speechToken) {
+              clearInterval(keepAliveInterval);
+              return;
+            }
+            if (window.speechSynthesis && window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+              window.speechSynthesis.pause();
+              window.speechSynthesis.resume();
+            }
+          }, 9000);
+
+          const speakNextUtterance = () => {
+            if (token !== speechToken) return;
+            if (chunkIdx >= chunks.length) {
+              if (keepAliveInterval) {
+                clearInterval(keepAliveInterval);
+                keepAliveInterval = null;
+              }
+              if (options.onend) options.onend();
+              return;
+            }
+
+            const chunk = chunks[chunkIdx++];
+            const u = new SpeechSynthesisUtterance(chunk);
+            u.voice = voice;
+            u.lang = voice.lang || "vi-VN";
+            u.rate = speechRate;
+            u.pitch = 1.0;
+
+            u.onend = () => {
+              if (token === speechToken) {
+                speakNextUtterance();
+              }
+            };
+
+            u.onerror = (e) => {
+              if (token !== speechToken) return;
+              if (e && (e.error === "interrupted" || e.error === "canceled")) return;
+              console.warn("Utterance error:", e);
+              speakNextUtterance();
+            };
+
+            window.speechSynthesis.speak(u);
+          };
+
+          speakNextUtterance();
+        } else {
+          if (options.onStatus) {
+            options.onStatus("ℹ️ Thiết bị chưa có giọng tiếng Việt. Đang dùng giọng phát thanh trực tuyến dự phòng.", false);
+          }
+          speakOnlineFallback(text, token, options);
+        }
+      }
+
+      return {
+        speak,
+        stop,
+        pause,
+        resume,
+        setRate,
+        getBestVoice,
+        getAllVoices: () => refreshVoices().filter(isViVoice)
+      };
+    })();
+
+    // =============================================================================
+    // UI CONTROLLER & EVENT BRIDGE CHO VIETNAMESESPEECHENGINE
+    // =============================================================================
+    currentTtsText = '';
+    isSpeaking = false;
+
+    async function initSpeechVoice() {
+      await VietnameseSpeechEngine.waitForVoices(2000);
+      const best = VietnameseSpeechEngine.getBestVoice();
+      if (best) {
+        updateVoiceInfoUI(`🔊 Giọng: ${best.name} [${best.lang}]`, false);
+      } else {
+        updateVoiceInfoUI("ℹ️ Thiết bị chưa có giọng tiếng Việt. Sẵn sàng dùng giọng Online dự phòng.", true);
+      }
+    }
+
+    function speakText(text) {
+      if (!text) return;
+      currentTtsText = text;
+      isSpeaking = true;
+      updateTtsUI(true);
+
+      VietnameseSpeechEngine.speak(text, {
+        onStatus: (statusText, isWarning) => {
+          updateVoiceInfoUI(statusText, isWarning);
+        },
+        onend: () => {
+          isSpeaking = false;
+          updateTtsUI(false);
+        },
+        onerror: (err) => {
+          console.warn("[TTS Error]:", err);
+          isSpeaking = false;
+          updateTtsUI(false);
+        }
+      });
+    }
+
+    function toggleSpeechSynthesis() {
+      if (isSpeaking) {
+        stopSpeechSynthesis();
+      } else {
+        const textToRead = currentModalArticle && currentModalArticle.tldr 
+          ? currentModalArticle.tldr 
+          : (articles.length > 0 ? articles[0].tldr : '');
+        if (textToRead) {
+          speakText(textToRead);
+        }
+      }
+    }
+
+    function stopSpeechSynthesis() {
+      VietnameseSpeechEngine.stop();
+      isSpeaking = false;
+      updateTtsUI(false);
+    }
+
+    function setTtsRate(rate) {
+      const r = Number(rate) || 1.0;
+      VietnameseSpeechEngine.setRate(r);
+
+      document.querySelectorAll('.tts-speed-btn').forEach(btn => {
+        if (btn.textContent.includes(rate + 'x')) {
+          btn.className = 'tts-speed-btn px-2.5 py-1 rounded bg-red-600 text-white font-medium shadow-xs';
+        } else {
+          btn.className = 'tts-speed-btn px-2.5 py-1 rounded text-slate-600 dark:text-slate-300 font-medium hover:text-red-600 transition';
+        }
+      });
+
+      if (isSpeaking && currentTtsText) {
+        speakText(currentTtsText);
+      }
+    }
+
+    function updateTtsUI(speaking) {
+      const eq = document.getElementById('ttsEqualizer');
+      const icon = document.getElementById('ttsIcon');
+      const progressBar = document.getElementById('ttsProgressBar');
+
+      if (icon) {
+        if (speaking) {
+          icon.setAttribute('data-lucide', 'square');
+        } else {
+          icon.setAttribute('data-lucide', 'volume-2');
+        }
+      }
+
+      if (eq) {
+        if (speaking) {
+          eq.classList.remove('hidden');
+          eq.classList.add('flex');
+        } else {
+          eq.classList.add('hidden');
+          eq.classList.remove('flex');
+        }
+      }
+
+      if (progressBar) {
+        progressBar.style.width = speaking ? '100%' : '0%';
+      }
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function updateVoiceInfoUI(statusText, isWarning) {
+      const infoEl = document.getElementById('ttsVoiceInfo');
+      const pillEl = document.getElementById('ttsStatusPill');
+      if (!infoEl || !pillEl) return;
+
+      infoEl.textContent = statusText;
+      if (isWarning) {
+        pillEl.textContent = 'Giọng Online';
+        pillEl.className = 'text-[10px] px-2 py-0.5 bg-amber-100 dark:bg-amber-950/80 rounded-full text-amber-700 dark:text-amber-300 font-bold';
+      } else {
+        pillEl.textContent = 'Phát thanh viên';
+        pillEl.className = 'text-[10px] px-2 py-0.5 bg-emerald-100 dark:bg-emerald-950/80 rounded-full text-emerald-700 dark:text-emerald-300 font-bold';
+      }
+    }
+
+    /**
+     * =========================================================================
+     * MODAL CẤU HÌNH GOOGLE SHEET
+     * =========================================================================
+     */
+    function openSheetConfigModal() {
+      const inputUrl = document.getElementById('inputSheetUrl');
+      const inputTab = document.getElementById('inputSheetTab');
+      const feedback = document.getElementById('connectionFeedback');
+
+      inputUrl.value = localStorage.getItem(STORAGE_KEY_SHEET_URL) || (typeof DEFAULT_CONFIG_SHEET_URL !== 'undefined' ? DEFAULT_CONFIG_SHEET_URL : '') || '';
+      inputTab.value = localStorage.getItem(STORAGE_KEY_SHEET_TAB) || (typeof DEFAULT_CONFIG_SHEET_TAB !== 'undefined' ? DEFAULT_CONFIG_SHEET_TAB : 'TinTuc') || 'TinTuc';
+      feedback.className = 'hidden';
+
+      validateSheetInputLength();
+
+      document.getElementById('sheetConfigModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeSheetConfigModal() {
+      document.getElementById('sheetConfigModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function testAndSaveSheetConfig() {
+      const urlVal = document.getElementById('inputSheetUrl').value.trim();
+      const tabVal = document.getElementById('inputSheetTab').value.trim() || 'TinTuc';
+
+      if (!urlVal) {
+        showFeedback(false, "Vui lòng nhập đường dẫn (URL) hoặc ID của Google Sheet.");
+        return;
+      }
+
+      const targetInfo = extractSpreadsheetInfo(urlVal);
+      if (!targetInfo) {
+        showFeedback(false, "Đường dẫn không hợp lệ. Vui lòng kiểm tra lại URL Google Sheet hoặc link Web App.");
+        return;
+      }
+
+      // Kiểm tra độ dài ID nếu là Google Sheet
+      if (targetInfo.type === 'sheet' && targetInfo.id.length < 35) {
+        showFeedback(false, `❌ CẢNH BÁO: ID Google Sheet bị thiếu ký tự!\n\n• ID bạn nhập hiện có: ${targetInfo.id.length} ký tự.\n• Một ID Google Sheet chuẩn luôn dài khoảng 44 ký tự.\n• Hãy sao chép lại toàn bộ đường dẫn trên thanh địa chỉ trình duyệt.`);
+        return;
+      }
+
+      localStorage.setItem(STORAGE_KEY_SHEET_URL, urlVal);
+      localStorage.setItem(STORAGE_KEY_SHEET_TAB, tabVal);
+
+      showFeedback(true, "Đang kết nối thử nghiệm đến Google Sheet...");
+      fetchSheetData(targetInfo, true);
+    }
+
+    function resetToSampleData() {
+      localStorage.removeItem(STORAGE_KEY_SHEET_URL);
+      localStorage.removeItem(STORAGE_KEY_SHEET_TAB);
+      articles = [...DEFAULT_SAMPLE_ARTICLES];
+      localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(articles));
+
+      updateSyncStatusDisplay(true, "Dữ liệu mẫu tòa soạn");
+      renderAll();
+      closeSheetConfigModal();
+      showToast("Khôi phục thành công", "Đã nạp lại 18 bài viết mẫu phong phú.", "info");
+    }
+
+    function showFeedback(isSuccess, message) {
+      const fb = document.getElementById('connectionFeedback');
+      fb.classList.remove('hidden');
+      if (isSuccess) {
+        fb.className = 'p-3 rounded-lg text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
+      } else {
+        fb.className = 'p-3 rounded-lg text-[11px] font-medium bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800';
+      }
+      fb.textContent = message;
+    }
+
+    function updateSyncStatusDisplay(state, text) {
+      const statusText = document.getElementById('syncStatusText');
+      const statusDot = document.getElementById('syncStatusDot');
+      const statusPulse = document.getElementById('syncStatusPulse');
+
+      if (!statusText) return;
+
+      if (state === 'loading') {
+        statusText.textContent = text;
+        statusDot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500';
+        statusPulse.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75';
+      } else if (state === 'sample') {
+        statusText.textContent = 'Bản tin mẫu (Bấm kết nối Sheet)';
+        statusDot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-sky-500';
+        statusPulse.className = 'hidden';
+      } else if (state === true) {
+        statusText.textContent = text;
+        statusDot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500';
+        statusPulse.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+      } else {
+        statusText.textContent = text;
+        statusDot.className = 'relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500';
+        statusPulse.className = 'hidden';
+      }
+    }
+
+    /**
+     * =========================================================================
+     * TIỆN ÍCH GIAO DIỆN, NGÀY THÁNG, PHÍM TẮT & TOAST
+     * =========================================================================
+     */
+    function initTheme() {
+      const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
+      const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      applyTheme(isDark);
+    }
+
+    function toggleDarkMode() {
+      const isCurrentlyDark = document.documentElement.classList.contains('dark');
+      applyTheme(!isCurrentlyDark);
+      localStorage.setItem(STORAGE_KEY_THEME, !isCurrentlyDark ? 'dark' : 'light');
+    }
+
+    function applyTheme(isDark) {
+      const moon = document.getElementById('themeIconMoon');
+      const sun = document.getElementById('themeIconSun');
+
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+        if (moon) moon.classList.add('hidden');
+        if (sun) sun.classList.remove('hidden');
+      } else {
+        document.documentElement.classList.remove('dark');
+        if (moon) moon.classList.remove('hidden');
+        if (sun) sun.classList.add('hidden');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function updateCurrentDate() {
+      const now = new Date();
+      const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+      const dayName = days[now.getDay()];
+      const day = String(now.getDate()).padStart(2, '0');
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const year = now.getFullYear();
+
+      const el = document.getElementById('currentDateText');
+      if (el) el.textContent = `${dayName}, ngày ${day}/${month}/${year}`;
+    }
+
+    function updateLiveClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      const el = document.getElementById('liveClock');
+      if (el) el.textContent = `${h}:${m}:${s}`;
+    }
+
+    function setupKeyboardShortcuts() {
+      // Phím tắt / để mở ô tìm kiếm
+      window.addEventListener('keydown', (e) => {
+        if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+          e.preventDefault();
+          const desk = document.getElementById('searchInputDesktop');
+          if (desk) desk.focus();
+        } else if (e.key === 'Escape') {
+          closeReaderModal();
+          closeSheetConfigModal();
+        }
+      });
+
+      // Lắng nghe sự kiện tìm kiếm
+      const deskInput = document.getElementById('searchInputDesktop');
+      const mobInput = document.getElementById('searchInputMobile');
+
+      const handleSearch = (val) => {
+        searchQuery = val.trim();
+        renderGrid();
+      };
+
+      if (deskInput) {
+        deskInput.addEventListener('input', (e) => handleSearch(e.target.value));
+      }
+      if (mobInput) {
+        mobInput.addEventListener('input', (e) => handleSearch(e.target.value));
+      }
+    }
+
+    function toggleMobileSearch() {
+      const box = document.getElementById('mobileSearchBox');
+      const mobInput = document.getElementById('searchInputMobile');
+      if (box.classList.contains('hidden')) {
+        box.classList.remove('hidden');
+        mobInput.focus();
+      } else {
+        box.classList.add('hidden');
+      }
+    }
+
+    function clearSearch() {
+      searchQuery = '';
+      const desk = document.getElementById('searchInputDesktop');
+      const mob = document.getElementById('searchInputMobile');
+      if (desk) desk.value = '';
+      if (mob) mob.value = '';
+      renderGrid();
+    }
+
+    function showToast(title, msg, type = 'success') {
+      const toast = document.getElementById('toastNotification');
+      const titleEl = document.getElementById('toastTitle');
+      const msgEl = document.getElementById('toastMessage');
+      const iconEl = document.getElementById('toastIcon');
+
+      titleEl.textContent = title;
+      msgEl.textContent = msg;
+
+      if (type === 'success') {
+        iconEl.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5 text-emerald-400"></i>';
+      } else if (type === 'info') {
+        iconEl.innerHTML = '<i data-lucide="info" class="w-5 h-5 text-sky-400"></i>';
+      } else {
+        iconEl.innerHTML = '<i data-lucide="alert-circle" class="w-5 h-5 text-red-400"></i>';
+      }
+      if (window.lucide) lucide.createIcons();
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    function getCategoryColorClasses(category) {
+      switch (category) {
+        case 'Thiên tai':
+          return { badge: 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300 border border-red-200 dark:border-red-800' };
+        case 'Thời tiết cực đoan':
+          return { badge: 'bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300 border border-sky-200 dark:border-sky-800' };
+        case 'Tai nạn':
+          return { badge: 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-200 dark:border-amber-800' };
+        case 'Chính trị':
+          return { badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800' };
+        case 'Công nghệ AI':
+          return { badge: 'bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300 border border-purple-200 dark:border-purple-800' };
+        case 'Thủ thuật IT':
+          return { badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800' };
+        default:
+          return { badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700' };
+      }
+    }
+
+    function getFallbackImage(category) {
+      const map = {
+        "Thiên tai": "https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1200&q=80",
+        "Thời tiết cực đoan": "https://images.unsplash.com/photo-1534088568595-a066f410bcda?auto=format&fit=crop&w=1200&q=80",
+        "Tai nạn": "https://images.unsplash.com/photo-1582139329536-e7284fece509?auto=format&fit=crop&w=1200&q=80",
+        "Chính trị": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80",
+        "Công nghệ AI": "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=1200&q=80",
+        "Thủ thuật IT": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80"
+      };
+      return map[category] || "https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=1200&q=80";
+    }
+
+    function getCategoryDisplayName(cat) {
+      const map = {
+        'ALL': 'Tất cả tin mới hôm nay',
+        'Thiên tai': '🚨 Chuyên mục: Thiên tai & Cứu nạn khẩn cấp',
+        'Thời tiết cực đoan': '⛈️ Chuyên mục: Thời tiết cực đoan & Cảnh báo',
+        'Tai nạn': '⚠️ Chuyên mục: Sự cố, Giao thông & Cứu hộ',
+        'Chính trị': '🏛️ Chuyên mục: Chính trị, Thể chế & Điều hành',
+        'Công nghệ AI': '🤖 Chuyên mục: Trí tuệ nhân tạo & Mô hình ngôn ngữ',
+        'Thủ thuật IT': '💻 Chuyên mục: Thủ thuật IT, Bảo mật & Công nghệ',
+        'BOOKMARKS': '⭐ Danh sách bài viết đã lưu đọc sau'
+      };
+      return map[cat] || cat;
+    }
+
+    function formatDateNow() {
+      const d = new Date();
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} ${h}:${m}`;
+    }
+
+    function formatTimeNow() {
+      const d = new Date();
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>

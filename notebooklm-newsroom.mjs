@@ -308,22 +308,49 @@ async function runNewsroomPipeline() {
     const citations = askRes.data.citations?.citations || [];
     console.log(`✅ Đã nhận Bản tin Tổng hợp (${rawAnswer.length} ký tự, ${citations.length} trích dẫn xác thực).`);
 
-    // 5. Kích hoạt tạo Audio Overview (chế độ bất đồng bộ không chặn luồng)
+    // 5. Kích hoạt tạo Audio Overview và chờ tải file âm thanh (.m4a) về thư mục audio/
     console.log(`🎙️ [Bước 5/5] Đang kích hoạt phòng thu NotebookLM Audio Overview...`);
     let audioStatus = "not_started";
     let audioMessage = "";
+    let localAudioFile = null;
     try {
       const audioRes = await handlers.handleGenerateAudio({
         notebook_id: notebookEntry.id,
+        custom_prompt: "Bản tin tổng hợp thời sự buổi sáng ngắn gọn, chuyên nghiệp bằng tiếng Việt.",
         wait_for_completion: false,
       });
       if (audioRes.success && audioRes.data?.result) {
         audioStatus = audioRes.data.result.status;
         audioMessage = audioRes.data.result.message || "Đang xử lý tại phòng thu NotebookLM Studio";
-        console.log(`✅ Trạng thái Audio Overview: ${audioStatus}`);
+        console.log(`✅ Trạng thái kích hoạt Audio Overview: ${audioStatus}`);
+
+        // Poll trạng thái mỗi 25 giây (tối đa 8 phút) để tải file âm thanh ngay khi hoàn tất
+        for (let attempt = 1; attempt <= 20; attempt++) {
+          await new Promise((r) => setTimeout(r, 25000));
+          const statusRes = await handlers.handleGetAudioStatus({
+            notebook_id: notebookEntry.id,
+          });
+          const curStatus = statusRes.data?.result?.status;
+          console.log(`  ⏳ [Kiểm tra Audio ${attempt}/20] Trạng thái: ${curStatus}`);
+          if (curStatus === "ready") {
+            const audioDir = path.join(__dirname, "audio");
+            fs.mkdirSync(audioDir, { recursive: true });
+            const dlRes = await handlers.handleDownloadAudio({
+              notebook_id: notebookEntry.id,
+              destination_dir: audioDir,
+            });
+            if (dlRes.success && dlRes.data?.result?.filePath) {
+              localAudioFile = "audio/" + path.basename(dlRes.data.result.filePath);
+              audioStatus = "ready";
+              audioMessage = "Đã tải thành công Audio Overview từ Google NotebookLM";
+              console.log(`🎉 Đã tải thành công Podcast Audio: ${localAudioFile}`);
+            }
+            break;
+          }
+        }
       }
     } catch (audioErr) {
-      console.warn(`⚠️ Không thể kích hoạt Audio Overview lúc này:`, audioErr);
+      console.warn(`⚠️ Không thể kích hoạt/tải Audio Overview lúc này:`, audioErr);
     }
 
     const digestPayload = {
@@ -348,7 +375,7 @@ async function runNewsroomPipeline() {
       audioOverview: {
         status: audioStatus,
         message: audioMessage,
-        localFile: null,
+        localFile: localAudioFile,
       },
     };
 

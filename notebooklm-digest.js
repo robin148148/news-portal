@@ -133,8 +133,9 @@ window.NOTEBOOKLM_DAILY_DIGEST = {
     }
   ],
   "audioOverview": {
-    "status": "started",
-    "message": "Audio Overview generation started. It typically takes 2–10 minutes. Poll `get_audio_status` to check completion, then call `download_audio`.",
-    "localFile": null
+    "status": "ready",
+    "title": "Lỗ hổng AI và điểm mù (20:47 • Deep Dive)",
+    "message": "Đã tạo & tải thành công Audio Overview (20:47 • 15.2 MB) từ Google NotebookLM Studio",
+    "localFile": "audio/ban-tin-notebooklm-13-11-2026.m4a"
   }
 };

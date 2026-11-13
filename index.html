@@ -453,15 +453,26 @@
           </div>
         </div>
 
-        <div id="nlmAudioPlayerBox" class="hidden bg-indigo-900/30 border border-indigo-400/30 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div id="nlmAudioPlayerBox" class="hidden bg-indigo-900/30 border border-indigo-400/30 rounded-xl p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-lg bg-indigo-500/30 flex items-center justify-center text-indigo-200 font-bold">🎙️</div>
+            <div class="w-9 h-9 rounded-lg bg-indigo-500/30 flex items-center justify-center text-indigo-200 font-bold shrink-0">🎙️</div>
             <div>
-              <div class="text-xs font-bold text-indigo-200">Podcast Đối Thoại AI (NotebookLM Audio Overview - Tiếng Việt)</div>
-              <div class="text-[11px] text-slate-300">Tự động kết xuất từ 15 bài báo chính thống trong ngày</div>
+              <div id="nlmAudioTitle" class="text-xs font-bold text-indigo-200">Podcast Đối Thoại AI (NotebookLM Audio Overview - Tiếng Việt)</div>
+              <div class="text-[11px] text-slate-300">Tự động kết xuất từ 15 bài báo chính thống trong ngày • Phát trực tiếp hoặc tải về</div>
             </div>
           </div>
-          <audio id="nlmAudioElement" controls class="h-9 w-full sm:w-80"></audio>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <audio id="nlmAudioElement" controls preload="metadata" class="h-9 w-full sm:w-72 md:w-80"></audio>
+            <a
+              id="nlmAudioDownloadLink"
+              href="audio/ban-tin-notebooklm-13-11-2026.m4a"
+              download="NotebookLM-BanTin-13-11-2026.m4a"
+              class="inline-flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 text-xs font-semibold border border-emerald-400/30 transition shrink-0"
+            >
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Tải Audio (.m4a)</span>
+            </a>
+          </div>
         </div>
 
         <div id="nlmBriefingGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2632,6 +2643,14 @@
       if (audioBox && audioEl && digest.audioOverview?.localFile) {
         audioBox.classList.remove('hidden');
         audioEl.src = digest.audioOverview.localFile;
+        const audioTitleEl = document.getElementById('nlmAudioTitle');
+        if (audioTitleEl && digest.audioOverview.title) {
+          audioTitleEl.textContent = 'Podcast Đối Thoại AI: ' + digest.audioOverview.title;
+        }
+        const dlLinkEl = document.getElementById('nlmAudioDownloadLink');
+        if (dlLinkEl) {
+          dlLinkEl.href = digest.audioOverview.localFile;
+        }
       }
 
       const text = digest.briefingMarkdown;

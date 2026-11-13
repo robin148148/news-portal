@@ -17,6 +17,7 @@
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="notebooklm-digest.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -407,6 +408,73 @@
         </div>
       </div>
 
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 4B. TÒA SOẠN AI NOTEBOOKLM & PODCAST TỔNG HỢP ĐA NGUỒN (GROUNDED RAG)     -->
+    <!-- ========================================================================= -->
+    <section id="notebooklmDigestSection" class="bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 text-white rounded-2xl p-5 sm:p-7 border border-indigo-500/30 shadow-xl relative overflow-hidden">
+      <div class="absolute -top-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 space-y-5">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-indigo-500/20">
+          <div class="space-y-1.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                ✨ Google NotebookLM × Antigravity
+              </span>
+              <span id="nlmSourceCountBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                15 nguồn báo xác thực • 0% ảo giác
+              </span>
+              <span id="nlmDateBadge" class="text-xs text-slate-400 font-mono"></span>
+            </div>
+            <h2 id="nlmNotebookTitle" class="text-lg sm:text-2xl font-serif font-bold text-white">
+              Bản Tin Tổng Hợp & Phân Tích Đa Chiều
+            </h2>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button
+              onclick="speakNotebookLMDigest()"
+              class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-semibold shadow-lg shadow-red-600/30 transition cursor-pointer"
+            >
+              <i data-lucide="volume-2" class="w-4 h-4"></i>
+              <span>Nghe Phát Thanh Viên AI Đọc Bản Tin</span>
+            </button>
+            <a
+              id="nlmNotebookLink"
+              href="https://notebooklm.google.com/notebook/a2a69390-033a-4ee7-ab3d-ed76eebffbd6"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-indigo-200 text-xs font-medium border border-white/15 transition"
+            >
+              <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              <span>Mở Sổ Tay & Podcast Studio</span>
+            </a>
+          </div>
+        </div>
+
+        <div id="nlmAudioPlayerBox" class="hidden bg-indigo-900/30 border border-indigo-400/30 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-lg bg-indigo-500/30 flex items-center justify-center text-indigo-200 font-bold">🎙️</div>
+            <div>
+              <div class="text-xs font-bold text-indigo-200">Podcast Đối Thoại AI (NotebookLM Audio Overview - Tiếng Việt)</div>
+              <div class="text-[11px] text-slate-300">Tự động kết xuất từ 15 bài báo chính thống trong ngày</div>
+            </div>
+          </div>
+          <audio id="nlmAudioElement" controls class="h-9 w-full sm:w-80"></audio>
+        </div>
+
+        <div id="nlmBriefingGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        </div>
+
+        <div class="pt-3 border-t border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400">
+          <div id="nlmAudioStatusText" class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Bấm vào các thẻ số trích dẫn [1]..[15] để đối chiếu trực tiếp bài báo gốc.</span>
+          </div>
+          <span class="font-mono text-indigo-300/80">Grounded via NotebookLM MCP v2.0</span>
+        </div>
+      </div>
     </section>
 
     <!-- THANH BỘ LỌC VÀ TÙY CHỌN HIỂN THỊ -->
@@ -2511,9 +2579,90 @@
     function renderAll() {
       updateCategoryBadges();
       renderHeroSection();
+      renderNotebookLMDigest();
       renderBreakingTicker();
       renderGrid();
       if (window.lucide) lucide.createIcons();
+    }
+
+    function speakNotebookLMDigest() {
+      const digest = window.NOTEBOOKLM_DAILY_DIGEST;
+      if (!digest || !digest.briefingMarkdown) return;
+      const cleanForSpeech = digest.briefingMarkdown
+        .replace(/\n(\d{1,2})(?=\n|[.,;])/g, "")
+        .replace(/[#*_]/g, "");
+      speakText(cleanForSpeech);
+    }
+
+    function openSourceByCitationIndex(idx) {
+      const digest = window.NOTEBOOKLM_DAILY_DIGEST;
+      if (!digest || !Array.isArray(digest.sourceArticles)) return;
+      const found = digest.sourceArticles.find(a => a.index === idx) || digest.sourceArticles[idx - 1];
+      if (found && found.link) {
+        openReaderModal(found.link);
+      }
+    }
+
+    function renderNotebookLMDigest() {
+      const sec = document.getElementById('notebooklmDigestSection');
+      const grid = document.getElementById('nlmBriefingGrid');
+      const digest = window.NOTEBOOKLM_DAILY_DIGEST;
+      if (!sec || !grid || !digest || !digest.briefingMarkdown) return;
+
+      sec.classList.remove('hidden');
+      const titleEl = document.getElementById('nlmNotebookTitle');
+      const countEl = document.getElementById('nlmSourceCountBadge');
+      const dateEl = document.getElementById('nlmDateBadge');
+      const linkEl = document.getElementById('nlmNotebookLink');
+      const audioBox = document.getElementById('nlmAudioPlayerBox');
+      const audioEl = document.getElementById('nlmAudioElement');
+
+      if (titleEl && digest.notebook?.name) {
+        titleEl.textContent = digest.notebook.name + ' — Phân Tích Đa Chiều';
+      }
+      if (countEl && digest.notebook?.sourceCount) {
+        countEl.textContent = digest.notebook.sourceCount + ' nguồn báo xác thực • 0% ảo giác';
+      }
+      if (dateEl && digest.displayDate) {
+        dateEl.textContent = 'Cập nhật: ' + digest.displayDate;
+      }
+      if (linkEl && digest.notebook?.url) {
+        linkEl.href = digest.notebook.url;
+      }
+      if (audioBox && audioEl && digest.audioOverview?.localFile) {
+        audioBox.classList.remove('hidden');
+        audioEl.src = digest.audioOverview.localFile;
+      }
+
+      const text = digest.briefingMarkdown;
+      const sections = text.split(/(?=\n?[1-4]\.\s+)/g)
+        .map(s => s.trim())
+        .filter(s => /^[1-4]\.\s+/.test(s));
+
+      const formatCitations = (raw) => {
+        return escapeHtml(raw)
+          .replace(/\n(\d{1,2})(?=\n|[.,;]|$)/g, (_, num) => {
+            const n = parseInt(num, 10);
+            return ` <button onclick="openSourceByCitationIndex(${n})" class="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-mono font-bold rounded bg-indigo-500/30 hover:bg-indigo-400 text-indigo-200 hover:text-slate-950 transition cursor-pointer" title="Xem bài báo nguồn #${n}">[${n}]</button>`;
+          })
+          .replace(/\n/g, '<br>');
+      };
+
+      if (sections.length > 0) {
+        grid.innerHTML = sections.map(block => {
+          const firstNl = block.indexOf('\n');
+          const heading = firstNl > -1 ? block.slice(0, firstNl).trim() : block;
+          const body = firstNl > -1 ? block.slice(firstNl + 1).trim() : '';
+          return `
+            <div class="bg-white/5 hover:bg-white/[0.08] border border-white/10 rounded-xl p-4 space-y-2.5 transition">
+              <h3 class="text-xs sm:text-sm font-bold text-amber-300 tracking-wide uppercase">${escapeHtml(heading)}</h3>
+              <div class="text-xs sm:text-[13px] text-slate-200 leading-relaxed space-y-1.5 font-serif">${formatCitations(body)}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        grid.innerHTML = `<div class="md:col-span-2 bg-white/5 border border-white/10 rounded-xl p-4 text-xs sm:text-sm text-slate-200 leading-relaxed font-serif">${formatCitations(text)}</div>`;
+      }
     }
 
     function renderBreakingTicker() {
@@ -2789,8 +2938,25 @@
       if (el) el.textContent = bookmarks.size;
     }
 
+    function triggerSearchNow() {
+      const sDesk = document.getElementById("searchInputDesktop");
+      const sMob = document.getElementById("searchInputMobile");
+      const val = (sDesk && sDesk.value.trim()) || (sMob && sMob.value.trim()) || "";
+      searchQuery = val;
+      if (val) currentCategory = "ALL";
+      renderGrid();
+      if (window.lucide) lucide.createIcons();
+    }
+
     function selectCategory(cat) {
       currentCategory = cat;
+      if (cat === "ALL") {
+        searchQuery = "";
+        const sDesk = document.getElementById("searchInputDesktop");
+        const sMob = document.getElementById("searchInputMobile");
+        if (sDesk) sDesk.value = "";
+        if (sMob) sMob.value = "";
+      }
 
       // Cập nhật tab active
       document.querySelectorAll('.category-tab').forEach(tab => {

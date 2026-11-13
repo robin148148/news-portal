@@ -2024,17 +2024,75 @@
       // 7. Khởi tạo giọng đọc Web Speech API
       initSpeechVoice();
 
+      // 8. Tự động làm tươi ngầm Bản tin & Audio NotebookLM mỗi sáng (không cần F5 thủ công)
+      setupMorningAutoRefresh();
+
       // Khởi tạo icon Lucide
       if (window.lucide) lucide.createIcons();
     });
 
     /**
      * =========================================================================
-     * QUẢN LÝ DỮ LIỆU & BỘ NHỚ LOCALSTORAGE
+     * QUẢN LÝ DỮ LIỆU, BỘ NHỚ LOCALSTORAGE & TỰ ĐỘNG LÀM TƯƠI MỖI SÁNG
      * =========================================================================
      */
+    let lastRenderedDigestStamp = '';
+
+    function applyDigestFreshArticlesIfNewer() {
+      const digest = window.NOTEBOOKLM_DAILY_DIGEST;
+      if (!digest) return false;
+      const stamp = `${digest.generatedAt || ''}|${digest.audioOverview?.localFile || ''}`;
+      if (stamp && stamp !== lastRenderedDigestStamp) {
+        lastRenderedDigestStamp = stamp;
+        if (Array.isArray(digest.freshArticles) && digest.freshArticles.length > 0) {
+          articles = digest.freshArticles;
+          try {
+            localStorage.setItem(STORAGE_KEY_ARTICLES, JSON.stringify(articles));
+            localStorage.setItem('news_portal_digest_stamp', stamp);
+          } catch (e) {}
+          updateSyncStatusDisplay(true, `Tự động cập nhật ${ digest.displayDate || 'hôm nay' }`);
+        }
+        return true;
+      }
+      return false;
+    }
+
+    function reloadNotebookLMDigestScript() {
+      const oldScript = document.getElementById('nlm_live_digest_loader');
+      if (oldScript) oldScript.remove();
+      const s = document.createElement('script');
+      s.id = 'nlm_live_digest_loader';
+      s.src = `notebooklm-digest.js?_t=${Date.now()}`;
+      s.onload = () => {
+        updateCurrentDate();
+        if (applyDigestFreshArticlesIfNewer()) {
+          renderAll();
+        } else {
+          renderNotebookLMDigest();
+        }
+      };
+      document.head.appendChild(s);
+    }
+
+    function setupMorningAutoRefresh() {
+      // Kiểm tra bản mới ngay khi mở trang (vượt bộ nhớ đệm trình duyệt)
+      reloadNotebookLMDigestScript();
+      // Tự động kiểm tra bản tin & audio mới định kỳ mỗi 3 phút (180.000ms)
+      setInterval(reloadNotebookLMDigestScript, 180000);
+      // Tự động làm tươi ngay khi người dùng mở lại tab trình duyệt vào buổi sáng
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reloadNotebookLMDigestScript();
+        }
+      });
+    }
+
     function loadInitialArticles() {
       try {
+        if (applyDigestFreshArticlesIfNewer() && articles.length > 0) {
+          renderAll();
+          return;
+        }
         const cached = localStorage.getItem(STORAGE_KEY_ARTICLES);
         if (cached) {
           const parsed = JSON.parse(cached);

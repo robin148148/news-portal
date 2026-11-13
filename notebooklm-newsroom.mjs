@@ -3,18 +3,20 @@
  * TÒA SOẠN BÁO CHÍ & BẢN TIN AUDIO TỰ ĐỘNG (NOTEBOOKLM x ANTIGRAVITY PIPELINE)
  * ============================================================================
  * Quy trình tự động khép kín mỗi sáng (06:30 AM):
- *   0. Tự động quét RSS trực tiếp từ VnExpress, Tuổi Trẻ, Dân Trí, VietnamNet, Thanh Niên
- *      để cập nhật live-fresh-articles.json (nếu có mạng).
+ *   0. Tự động quét RSS trực tiếp từ VnExpress, Tuổi Trẻ, Dân Trí, Thanh Niên
+ *      để cập nhật live-fresh-articles.json.
  *   1. Chuẩn bị Hồ sơ 15 bài báo tiêu điểm & tin nóng đa chuyên mục.
  *   2. Tự động khởi tạo Sổ tay NotebookLM mới (create_notebook) theo ngày.
  *   3. Bơm hồ sơ tin tức đa nguồn vào NotebookLM (add_source).
  *   4. Đặt câu hỏi biên tập tổng hợp đa chiều kèm trích dẫn gốc (ask_question + citations).
- *   5. Kích hoạt tạo Podcast Audio Overview (generate_audio) và xuất dữ liệu ra
- *      notebooklm-digest.json & notebooklm-digest.js cho Cổng Tin Tức Web (index.html).
+ *   5. Kích hoạt tạo Podcast Audio Overview (generate_audio), chờ hoàn tất và tải
+ *      file âm thanh (.m4a) về thư mục audio/, xuất dữ liệu ra notebooklm-digest.json
+ *      & notebooklm-digest.js, đồng thời tự động đồng bộ lên GitHub.
  */
 
 import fs from "fs";
 import path from "path";
+import { execSync } from "child_process";
 import { fileURLToPath, pathToFileURL } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -181,6 +183,14 @@ function getTodayDateString() {
   return `${d}/${m}/${y}`;
 }
 
+function getTodaySlug() {
+  const now = new Date();
+  const d = String(now.getDate()).padStart(2, "0");
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const y = now.getFullYear();
+  return `${d}-${m}-${y}`;
+}
+
 function buildNewsDossier(articles, dateStr) {
   const selected = articles.slice(0, 15);
   const lines = [
@@ -214,6 +224,48 @@ function buildNewsDossier(articles, dateStr) {
   };
 }
 
+function saveDigestFiles(digestPayload) {
+  const jsonOutPath = path.join(__dirname, "notebooklm-digest.json");
+  const jsOutPath = path.join(__dirname, "notebooklm-digest.js");
+  fs.writeFileSync(jsonOutPath, JSON.stringify(digestPayload, null, 2), "utf-8");
+  fs.writeFileSync(
+    jsOutPath,
+    `// Tự động sinh bởi NotebookLM x Antigravity Newsroom Pipeline\nwindow.NOTEBOOKLM_DAILY_DIGEST = ${JSON.stringify(digestPayload, null, 2)};\n`,
+    "utf-8"
+  );
+}
+
+function autoPushToGitHub(dateStr) {
+  try {
+    console.log("☁️ Đang tự động đồng bộ bản tin & file Audio mới lên GitHub...");
+    let token = "";
+    try {
+      token = execSync("gh auth token --user robin148148", { encoding: "utf-8" }).trim();
+    } catch {
+      // Nếu không cần token riêng thì dùng origin mặc định
+    }
+    execSync("git add live-fresh-articles.json notebooklm-digest.json notebooklm-digest.js audio/", {
+      cwd: __dirname,
+      stdio: "inherit",
+    });
+    execSync(`git commit -m "chore(daily-newsroom): auto-update briefing & audio for ${dateStr}"`, {
+      cwd: __dirname,
+      stdio: "inherit",
+    });
+    if (token) {
+      execSync(`git push "https://robin148148:${token}@github.com/robin148148/news-portal.git" main`, {
+        cwd: __dirname,
+        stdio: "inherit",
+      });
+    } else {
+      execSync("git push origin main", { cwd: __dirname, stdio: "inherit" });
+    }
+    console.log("✅ Đã tự động đẩy bản tin & audio mới lên GitHub thành công!");
+  } catch (err) {
+    console.warn("ℹ️ Bỏ qua bước git push tự động (hoặc không có thay đổi mới):", err.message);
+  }
+}
+
 async function runNewsroomPipeline() {
   console.log("==================================================================");
   console.log(" 🚀 KHỞI ĐỘNG DÂY CHUYỀN TÒA SOẠN AI (NOTEBOOKLM x ANTIGRAVITY)");
@@ -228,11 +280,13 @@ async function runNewsroomPipeline() {
   const sessionManager = new SessionManager(authManager);
   const library = new NotebookLibrary();
   const handlers = new ToolHandlers(sessionManager, authManager, library);
+  const SESSION_ID = "daily-newsroom";
 
   try {
     // 0 & 1. Quét RSS trực tiếp và chuẩn bị hồ sơ 15 bài báo
     const rawArticles = await fetchLiveRssArticles();
     const dateStr = getTodayDateString();
+    const dateSlug = getTodaySlug();
     const notebookTitle = `Tòa Soạn AI - Bản Tin ${dateStr}`;
 
     const { dossierText, selectedArticles } = buildNewsDossier(rawArticles, dateStr);
@@ -262,6 +316,7 @@ async function runNewsroomPipeline() {
       // 3. Bơm Hồ sơ Tin tức vào Sổ tay vừa tạo
       console.log(`📥 [Bước 3/5] Đang nạp Hồ sơ ${selectedArticles.length} bài báo vào NotebookLM...`);
       const addSourceRes = await handlers.handleAddSource({
+        session_id: SESSION_ID,
         notebook_id: notebookEntry.id,
         type: "text",
         title: `Hồ sơ Tin tức Báo chí Chính thống (${dateStr})`,
@@ -290,6 +345,7 @@ async function runNewsroomPipeline() {
       "Yêu cầu: Giọng văn báo chí chính luận, súc tích, giữ nguyên các mốc số liệu và gắn trích dẫn nguồn đầy đủ.";
 
     const askRes = await handlers.handleAskQuestion({
+      session_id: SESSION_ID,
       notebook_id: notebookEntry.id,
       question: editorialPrompt,
       citation_format: "json",
@@ -307,51 +363,6 @@ async function runNewsroomPipeline() {
 
     const citations = askRes.data.citations?.citations || [];
     console.log(`✅ Đã nhận Bản tin Tổng hợp (${rawAnswer.length} ký tự, ${citations.length} trích dẫn xác thực).`);
-
-    // 5. Kích hoạt tạo Audio Overview và chờ tải file âm thanh (.m4a) về thư mục audio/
-    console.log(`🎙️ [Bước 5/5] Đang kích hoạt phòng thu NotebookLM Audio Overview...`);
-    let audioStatus = "not_started";
-    let audioMessage = "";
-    let localAudioFile = null;
-    try {
-      const audioRes = await handlers.handleGenerateAudio({
-        notebook_id: notebookEntry.id,
-        custom_prompt: "Bản tin tổng hợp thời sự buổi sáng ngắn gọn, chuyên nghiệp bằng tiếng Việt.",
-        wait_for_completion: false,
-      });
-      if (audioRes.success && audioRes.data?.result) {
-        audioStatus = audioRes.data.result.status;
-        audioMessage = audioRes.data.result.message || "Đang xử lý tại phòng thu NotebookLM Studio";
-        console.log(`✅ Trạng thái kích hoạt Audio Overview: ${audioStatus}`);
-
-        // Poll trạng thái mỗi 25 giây (tối đa 8 phút) để tải file âm thanh ngay khi hoàn tất
-        for (let attempt = 1; attempt <= 20; attempt++) {
-          await new Promise((r) => setTimeout(r, 25000));
-          const statusRes = await handlers.handleGetAudioStatus({
-            notebook_id: notebookEntry.id,
-          });
-          const curStatus = statusRes.data?.result?.status;
-          console.log(`  ⏳ [Kiểm tra Audio ${attempt}/20] Trạng thái: ${curStatus}`);
-          if (curStatus === "ready") {
-            const audioDir = path.join(__dirname, "audio");
-            fs.mkdirSync(audioDir, { recursive: true });
-            const dlRes = await handlers.handleDownloadAudio({
-              notebook_id: notebookEntry.id,
-              destination_dir: audioDir,
-            });
-            if (dlRes.success && dlRes.data?.result?.filePath) {
-              localAudioFile = "audio/" + path.basename(dlRes.data.result.filePath);
-              audioStatus = "ready";
-              audioMessage = "Đã tải thành công Audio Overview từ Google NotebookLM";
-              console.log(`🎉 Đã tải thành công Podcast Audio: ${localAudioFile}`);
-            }
-            break;
-          }
-        }
-      }
-    } catch (audioErr) {
-      console.warn(`⚠️ Không thể kích hoạt/tải Audio Overview lúc này:`, audioErr);
-    }
 
     const digestPayload = {
       generatedAt: new Date().toISOString(),
@@ -372,28 +383,91 @@ async function runNewsroomPipeline() {
         publishedAt: a.publishedAt,
         link: String(a.link || "").replace("<![CDATA[", "").replace("]]>", "").trim(),
       })),
+      freshArticles: rawArticles.slice(0, 36),
       audioOverview: {
-        status: audioStatus,
-        message: audioMessage,
-        localFile: localAudioFile,
+        status: "in_progress",
+        title: `Bản tin Audio Overview ngày ${dateStr}`,
+        message: "Đang khởi tạo tại phòng thu Google NotebookLM Studio...",
+        localFile: null,
       },
     };
 
-    const jsonOutPath = path.join(__dirname, "notebooklm-digest.json");
-    const jsOutPath = path.join(__dirname, "notebooklm-digest.js");
+    // Lưu trước bản tin chữ để giao diện web có ngay nội dung mới
+    saveDigestFiles(digestPayload);
 
-    fs.writeFileSync(jsonOutPath, JSON.stringify(digestPayload, null, 2), "utf-8");
-    fs.writeFileSync(
-      jsOutPath,
-      `// Tự động sinh bởi NotebookLM x Antigravity Newsroom Pipeline\nwindow.NOTEBOOKLM_DAILY_DIGEST = ${JSON.stringify(digestPayload, null, 2)};\n`,
-      "utf-8"
-    );
+    // 5. Kích hoạt tạo Audio Overview và chờ tải file âm thanh (.m4a) về thư mục audio/
+    console.log(`🎙️ [Bước 5/5] Đang kích hoạt phòng thu NotebookLM Audio Overview...`);
+    try {
+      const audioRes = await handlers.handleGenerateAudio({
+        session_id: SESSION_ID,
+        notebook_id: notebookEntry.id,
+        custom_prompt: "Bản tin tổng hợp thời sự buổi sáng ngắn gọn, chuyên nghiệp bằng tiếng Việt.",
+        wait_for_completion: false,
+      });
+
+      if (audioRes.success && audioRes.data?.result) {
+        digestPayload.audioOverview.status = audioRes.data.result.status;
+        digestPayload.audioOverview.message =
+          audioRes.data.result.message || "Đang xử lý tại phòng thu NotebookLM Studio";
+        console.log(`✅ Trạng thái kích hoạt Audio Overview: ${digestPayload.audioOverview.status}`);
+
+        // Poll trạng thái mỗi 25 giây (tối đa 30 lần = 12.5 phút) để chắc chắn tải được file .m4a
+        for (let attempt = 1; attempt <= 30; attempt++) {
+          if (digestPayload.audioOverview.status !== "ready") {
+            await new Promise((r) => setTimeout(r, 25000));
+          }
+          const statusRes = await handlers.handleGetAudioStatus({
+            session_id: SESSION_ID,
+            notebook_id: notebookEntry.id,
+          });
+          const curStatus = statusRes.data?.result?.status;
+          console.log(`  ⏳ [Kiểm tra Audio ${attempt}/30] Trạng thái: ${curStatus}`);
+
+          if (curStatus === "ready") {
+            const audioDir = path.join(__dirname, "audio");
+            fs.mkdirSync(audioDir, { recursive: true });
+            const dlRes = await handlers.handleDownloadAudio({
+              session_id: SESSION_ID,
+              notebook_id: notebookEntry.id,
+              destination_dir: audioDir,
+            });
+            if (dlRes.success && dlRes.data?.result?.filePath) {
+              const rawPath = dlRes.data.result.filePath;
+              const ext = path.extname(rawPath) || ".m4a";
+              const cleanName = `ban-tin-notebooklm-${dateSlug}${ext}`;
+              const cleanFullPath = path.join(audioDir, cleanName);
+              if (rawPath !== cleanFullPath) {
+                fs.copyFileSync(rawPath, cleanFullPath);
+                try {
+                  fs.unlinkSync(rawPath);
+                } catch {}
+              }
+              const suggestedBase = path.basename(rawPath, ext).replace(/_/g, " ");
+              digestPayload.generatedAt = new Date().toISOString();
+              digestPayload.audioOverview = {
+                status: "ready",
+                title: `${suggestedBase} (Deep Dive • ${dateStr})`,
+                message: `Đã tạo & tải thành công Audio Overview từ Google NotebookLM Studio`,
+                localFile: `audio/${cleanName}`,
+              };
+              console.log(`🎉 Đã tải thành công Podcast Audio: audio/${cleanName}`);
+            }
+            break;
+          }
+        }
+      }
+    } catch (audioErr) {
+      console.warn(`⚠️ Không thể kích hoạt/tải Audio Overview lúc này:`, audioErr);
+    }
+
+    // Lưu bản hoàn chỉnh (gồm cả đường dẫn Audio .m4a) và tự động đẩy lên GitHub
+    saveDigestFiles(digestPayload);
+    autoPushToGitHub(dateStr);
 
     console.log("==================================================================");
-    console.log(" 🎉 HOÀN TẤT XUẤT BẢN BẢN TIN AI NOTEBOOKLM!");
-    console.log(` 📄 File JSON: ${jsonOutPath}`);
-    console.log(` 📄 File JS  : ${jsOutPath}`);
+    console.log(" 🎉 HOÀN TẤT XUẤT BẢN BẢN TIN & AUDIO AI NOTEBOOKLM!");
     console.log(` 🔗 Sổ tay   : ${notebookEntry.url}`);
+    console.log(` 🎙️ Audio    : ${digestPayload.audioOverview.localFile || "Đang xử lý"}`);
     console.log("==================================================================");
   } finally {
     await sessionManager.closeAllSessions();
